@@ -369,6 +369,52 @@ body {
 .badge-status.warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
 .badge-status.danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
 
+/* Excel Clone Table */
+.excel-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: #fff;
+    color: #333;
+    border-radius: 8px;
+}
+
+.excel-table {
+    border-collapse: collapse;
+    width: max-content;
+    font-size: 0.75rem;
+    font-family: 'Arial', sans-serif;
+    white-space: nowrap;
+}
+
+.excel-table th, .excel-table td {
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    text-align: right;
+}
+
+.excel-table th {
+    background-color: #f3f4f6;
+    color: #111;
+    font-weight: 600;
+    text-align: center;
+}
+
+.excel-table td:nth-child(3) {
+    text-align: left; /* Tanggal */
+}
+
+.excel-table .bg-blue { background-color: #dbeafe; color: #1e3a8a; }
+.excel-table .bg-green { background-color: #d1fae5; color: #065f46; }
+.excel-table .bg-orange { background-color: #ffedd5; color: #9a3412; }
+.excel-table .border-right { border-right: 2px solid #9ca3af; }
+.excel-table .text-bold { font-weight: 700; }
+.excel-table .text-success { color: #059669; }
+
+.excel-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
 /* Buttons */
 .btn-primary, .btn-outline, .btn-success, .btn-danger, .btn-export {
     padding: 8px 16px;

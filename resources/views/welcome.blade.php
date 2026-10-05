@@ -23,11 +23,17 @@
                 <a href="#" class="nav-link active" data-target="dashboard">
                     <i class="ti ti-layout-dashboard"></i> Dashboard Leader
                 </a>
+                <a href="#" class="nav-link" data-target="sales">
+                    <i class="ti ti-chart-bar"></i> Monitoring Sales
+                </a>
                 <a href="#" class="nav-link" data-target="staff-portal">
                     <i class="ti ti-users"></i> Portal Staff
                 </a>
                 <a href="#" class="nav-link" data-target="reports">
                     <i class="ti ti-report-analytics"></i> Rekap & Laporan
+                </a>
+                <a href="#" class="nav-link" data-target="serah-terima">
+                    <i class="ti ti-cash-banknote"></i> Serah Terima Sales & Modal Harian
                 </a>
             </nav>
             <div class="user-profile">
@@ -49,7 +55,10 @@
                     <h1 id="current-page-title">Dashboard Monitoring</h1>
                     <p class="date" id="current-date"></p>
                 </div>
-                <div class="topbar-actions">
+                <div class="topbar-actions" style="display: flex; gap: 16px; align-items: center;">
+                    <form method="GET" action="{{ route('dashboard') }}" id="periodForm">
+                        <input type="month" name="period" value="{{ $currentPeriod }}" class="styled-input" style="padding: 6px 12px;" onchange="document.getElementById('periodForm').submit()">
+                    </form>
                     <button class="icon-btn" aria-label="Notifications">
                         <i class="ti ti-bell"></i>
                         <span class="badge">3</span>
@@ -256,6 +265,203 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Sales Monitoring View -->
+            <section id="view-sales" class="view-section hidden">
+                <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2>HARIAN SALES PERFORMANCE REGIONAL 5 TH 2026</h2>
+                        <p class="sub-text m-0">Rekapitulasi Kinerja Seluruh Area (SharePoint Sync)</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary" onclick="alert('Sinkronisasi SharePoint berjalan...')"><i class="ti ti-refresh"></i> Sync Data</button>
+                        <a href="https://ekabogainti-my.sharepoint.com/:x:/g/personal/giri_handoko_hokben_co_id/IQAglXy_uxWuTL3_6jULiDPNAbCmC_K7FrMfxRi6-t283jI?e=FT1W9G&CID=7876485c-ad48-d43b-2814-f198d9fa5fe3" target="_blank" class="btn-outline" style="text-decoration: none;"><i class="ti ti-brand-office"></i> Buka SharePoint Asli</a>
+                    </div>
+                </div>
+
+                <div class="glass-panel mb-5" style="padding: 0; overflow: hidden;">
+                    <div class="excel-container">
+                        <table class="excel-table">
+                            <thead>
+                                <tr class="header-tier-1">
+                                    <th rowspan="2" class="border-right" style="vertical-align: middle;">Tanggal</th>
+                                    <th colspan="3" class="border-right bg-blue">AREA 15</th>
+                                    <th colspan="3" class="border-right bg-green">AREA 16</th>
+                                    <th colspan="3" class="border-right bg-orange">AREA 17</th>
+                                    <th colspan="3" class="border-right bg-blue">AREA 18</th>
+                                    <th colspan="3" class="border-right bg-green">AREA 19</th>
+                                    <th colspan="3" class="bg-orange">TOTAL REGIONAL 5</th>
+                                </tr>
+                                <tr class="header-tier-2">
+                                    <th>Target</th><th>Actual</th><th class="border-right">% Ach</th>
+                                    <th>Target</th><th>Actual</th><th class="border-right">% Ach</th>
+                                    <th>Target</th><th>Actual</th><th class="border-right">% Ach</th>
+                                    <th>Target</th><th>Actual</th><th class="border-right">% Ach</th>
+                                    <th>Target</th><th>Actual</th><th class="border-right">% Ach</th>
+                                    <th>Target</th><th>Actual</th><th>% Ach</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for ($i = 1; $i <= 31; $i++)
+                                <tr>
+                                    <td class="text-bold border-right">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}-Okt-26</td>
+                                    <td>50.000.000</td><td>45.200.000</td><td class="border-right text-success">90.4%</td>
+                                    <td>45.000.000</td><td>47.500.000</td><td class="border-right text-success">105.5%</td>
+                                    <td>60.000.000</td><td>55.000.000</td><td class="border-right text-success">91.6%</td>
+                                    <td>55.000.000</td><td>58.200.000</td><td class="border-right text-success">105.8%</td>
+                                    <td>65.000.000</td><td>68.500.000</td><td class="border-right text-success">105.3%</td>
+                                    <td class="text-bold">275.000.000</td><td class="text-bold">274.400.000</td><td class="text-bold text-success">99.7%</td>
+                                </tr>
+                                @endfor
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel-header mb-4 mt-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+                    <div>
+                        <h2>08. AGUSTUS - SALES AREA 19 2026 - SISWANTO</h2>
+                        <p class="sub-text m-0">Sinkronisasi Langsung dari Google Sheets</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-success" onclick="fetchArea19Data(this)"><i class="ti ti-refresh"></i> Sync Data</button>
+                        <a href="https://docs.google.com/spreadsheets/d/1zNxrQc1z02yEXmCmvuvGAkkGlJcdwDPH/edit?gid=297723641#gid=297723641" target="_blank" class="btn-outline" style="text-decoration: none;"><i class="ti ti-brand-google-drive"></i> Buka Sheet Asli</a>
+                    </div>
+                </div>
+                
+                <div class="glass-panel" style="padding: 0; overflow: hidden;">
+                    <div class="excel-container">
+                        <table class="excel-table">
+                            <thead>
+                                <tr class="header-tier-1">
+                                    <th colspan="2" class="border-right">Target Info</th>
+                                    <th colspan="14" class="border-right bg-blue">Daily Sales Report - Laporan Sales per Layanan</th>
+                                    <th colspan="14" class="border-right bg-green">Daily TC Report - Laporan TC per Layanan</th>
+                                    <th colspan="8" class="border-right">ACTUAL SDM & MAN HOUR</th>
+                                    <th colspan="10" class="bg-orange">Daily AC Report - Laporan AC per Layanan</th>
+                                </tr>
+                                <tr class="header-tier-2">
+                                    <th>Target Sales Per Month</th>
+                                    <th class="border-right">Target Sales Berjalan</th>
+                                    
+                                    <th rowspan="2">Tanggal</th>
+                                    <th rowspan="2">Target Sales/Day</th>
+                                    <th colspan="9">Channels (Sales)</th>
+                                    <th rowspan="2">Total Sales</th>
+                                    <th rowspan="2">Persentase/Day</th>
+                                    <th rowspan="2" class="border-right">RUPIAH</th>
+                                    
+                                    <th rowspan="2">Target TC/Day</th>
+                                    <th colspan="9">Channels (TC)</th>
+                                    <th rowspan="2">Total TC</th>
+                                    <th rowspan="2" class="border-right">Persentase/Day</th>
+
+                                    <th rowspan="2">TMS</th>
+                                    <th rowspan="2">CL+TMBS</th>
+                                    <th rowspan="2">HONORER</th>
+                                    <th rowspan="2">PART TIME</th>
+                                    <th rowspan="2">CL/TMBS/HON</th>
+                                    <th rowspan="2">PARTIME</th>
+                                    <th rowspan="2">DI</th>
+                                    <th rowspan="2" class="border-right">TA</th>
+
+                                    <th rowspan="2">AC Per Day</th>
+                                    <th colspan="9">Channels (AC)</th>
+                                </tr>
+                                <tr class="header-tier-3">
+                                    <th class="text-bold">435.049.397</th>
+                                    <th class="text-bold border-right">60.906.916</th>
+                                    
+                                    <!-- Sales Channels -->
+                                    <th>Birthday</th><th>Dine in</th><th>Delivery</th><th>Expoo</th><th>Take Away</th><th>Drive Thru</th><th>Gofood</th><th>Grabfood</th><th>Shopeefood</th>
+                                    
+                                    <!-- TC Channels -->
+                                    <th>Birthday</th><th>Dine in</th><th>Delivery</th><th>Expoo</th><th>Take Away</th><th>Drive Thru</th><th>Gofood</th><th>Grabfood</th><th>Shopeefood</th>
+                                    
+                                    <!-- AC Channels -->
+                                    <th>Birthday</th><th>Dine in</th><th>Delivery</th><th>Expoo</th><th>Take Away</th><th>Drive Thru</th><th>Gofood</th><th>Grabfood</th><th>Shopeefood</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sales-table-body">
+                                @for ($i = 1; $i <= 31; $i++)
+                                <tr>
+                                    <td></td><td class="border-right"></td>
+                                    <td class="text-bold">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}-Okt-26</td>
+                                    <td>13.051.482</td>
+                                    <td>0</td><td>4.951.413</td><td>0</td><td>0</td><td>3.371.397</td><td>0</td><td>2.558.428</td><td>3.419.985</td><td>1.136.801</td>
+                                    <td class="text-bold text-success">15.438.024</td>
+                                    <td>118,3%</td>
+                                    <td class="border-right"></td>
+                                    
+                                    <td>160</td>
+                                    <td>0</td><td>65</td><td>0</td><td>0</td><td>40</td><td>0</td><td>29</td><td>26</td><td>17</td>
+                                    <td class="text-bold text-success">177</td>
+                                    <td class="border-right">110,6%</td>
+
+                                    <td>2</td><td>4</td><td>2</td><td>1</td><td>39,00</td><td>4,00</td><td>4,12</td><td class="border-right">4</td>
+
+                                    <td>87.220</td>
+                                    <td>0</td><td>76.176</td><td>0</td><td>0</td><td>84.285</td><td>0</td><td>88.222</td><td>131.538</td><td>66.871</td>
+                                </tr>
+                                @endfor
+                                
+                                <!-- ROW TOTAL -->
+                                <tr style="background-color: #f3f4f6; font-weight: bold;">
+                                    <td colspan="3" class="text-right border-right">TOTAL BULAN INI</td>
+                                    <td>404.595.942</td>
+                                    <td>0</td><td>153.493.803</td><td>0</td><td>0</td><td>104.513.307</td><td>0</td><td>79.311.268</td><td>106.019.535</td><td>35.240.831</td>
+                                    <td class="text-success">478.578.744</td>
+                                    <td></td>
+                                    <td class="border-right"></td>
+                                    
+                                    <td>4.960</td>
+                                    <td>0</td><td>2.015</td><td>0</td><td>0</td><td>1.240</td><td>0</td><td>899</td><td>806</td><td>527</td>
+                                    <td class="text-success">5.487</td>
+                                    <td class="border-right"></td>
+
+                                    <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td class="border-right">-</td>
+
+                                    <td>-</td>
+                                    <td>0</td><td>-</td><td>0</td><td>0</td><td>-</td><td>0</td><td>-</td><td>-</td><td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Serah Terima Sales & Modal Harian View -->
+            <section id="view-serah-terima" class="view-section hidden">
+                <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                    <h2>SERAH TERIMA SALES DAN MODAL HARIAN</h2>
+                    <p class="sub-text m-0">Form pencatatan serah terima sales dan modal kasir harian.</p>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="tabs-container mb-4" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                    <button class="tab-btn active" onclick="switchSerahTerimaTab('JANUARI')" style="padding: 10px 20px; border: none; border-radius: 8px; background: var(--primary); color: white; cursor: pointer; font-weight: 600;">Januari</button>
+                    <button class="tab-btn" onclick="switchSerahTerimaTab('FEBRUARI')" style="padding: 10px 20px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text-color); cursor: pointer;">Februari</button>
+                    <button class="tab-btn" onclick="switchSerahTerimaTab('MARET')" style="padding: 10px 20px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text-color); cursor: pointer;">Maret</button>
+                    <button class="tab-btn" onclick="switchSerahTerimaTab('APRIL')" style="padding: 10px 20px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text-color); cursor: pointer;">April</button>
+                    <button class="tab-btn" onclick="switchSerahTerimaTab('MEI')" style="padding: 10px 20px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text-color); cursor: pointer;">Mei</button>
+                    <button class="tab-btn" onclick="switchSerahTerimaTab('JUNI')" style="padding: 10px 20px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text-color); cursor: pointer;">Juni</button>
+                    <button class="tab-btn" onclick="switchSerahTerimaTab('JULI')" style="padding: 10px 20px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text-color); cursor: pointer;">Juli</button>
+                    <button class="tab-btn" onclick="switchSerahTerimaTab('AGUSTUS')" style="padding: 10px 20px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text-color); cursor: pointer;">Agustus</button>
+                </div>
+
+                <div class="glass-panel" id="serah-terima-content" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 75vh;">
+                    <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);">
+                        <h3 id="serah-terima-title" style="margin: 0;">Data Serah Terima - JANUARI</h3>
+                        <a id="serah-terima-external-link" href="https://docs.google.com/spreadsheets/d/19S0wZPXQ4T_u2DMtrUyLXhSpLfUe0tjr/edit?gid=285912838" target="_blank" class="btn-outline" style="text-decoration: none; padding: 6px 12px; font-size: 13px;">
+                            <i class="ti ti-external-link"></i> Buka di Tab Baru
+                        </a>
+                    </div>
+                    
+                    <div style="flex-grow: 1; position: relative;">
+                        <iframe id="serah-terima-iframe" src="https://docs.google.com/spreadsheets/d/19S0wZPXQ4T_u2DMtrUyLXhSpLfUe0tjr/htmlembed?widget=true&headers=false&gid=285912838" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
     
@@ -285,5 +491,55 @@
     </div>
 
     <script src="{{ asset('app.js') }}"></script>
+    <script>
+        function fetchArea19Data(btnElement) {
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = '<i class="ti ti-loader"></i> Menyinkronkan...';
+            btnElement.disabled = true;
+
+            fetch('{{ route("api.sync.area19") }}')
+                .then(response => response.json())
+                .then(result => {
+                    btnElement.innerHTML = originalText;
+                    btnElement.disabled = false;
+                    
+                    if(result.success) {
+                        const rawData = result.data;
+                        let missingDataAlerts = [];
+                        
+                        if (rawData && rawData.length > 0) {
+                            const headers = rawData[0]; // Asumsikan baris pertama adalah header
+                            
+                            for (let r = 1; r < rawData.length; r++) {
+                                const row = rawData[r];
+                                // Mengecek setiap kolom berdasarkan panjang header
+                                for (let c = 0; c < headers.length; c++) {
+                                    if (row[c] === undefined || row[c] === null || String(row[c]).trim() === '') {
+                                        let colName = headers[c] || `Kolom ke-${c+1}`;
+                                        missingDataAlerts.push(`Baris ${r + 1} - Kolom "${colName}" belum diisi.`);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (missingDataAlerts.length > 0) {
+                            alert("Peringatan! Terdapat data yang belum lengkap:\n\n" + missingDataAlerts.slice(0, 15).join("\n") + (missingDataAlerts.length > 15 ? `\n\n...dan ${missingDataAlerts.length - 15} data lainnya.` : ""));
+                        } else {
+                            alert("Berhasil menarik data! Semua kolom telah terisi.");
+                        }
+                        
+                        console.log("Isi mentah (Raw Data) Google Sheet 'monitoring sales':", result.data);
+                    } else {
+                        alert("Gagal sinkronisasi: " + result.message);
+                    }
+                })
+                .catch(error => {
+                    btnElement.innerHTML = originalText;
+                    btnElement.disabled = false;
+                    alert("Terjadi kesalahan jaringan atau konfigurasi Google API Client belum selesai.");
+                    console.error(error);
+                });
+        }
+    </script>
 </body>
 </html>

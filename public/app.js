@@ -10,8 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const titles = {
         'dashboard': 'Dashboard Monitoring',
+        'sales': 'Monitoring Sales',
         'staff-portal': 'Portal Karyawan',
-        'reports': 'Rekap & Laporan'
+        'reports': 'Rekap & Laporan',
+        'serah-terima': 'Serah Terima Sales & Modal Harian'
     };
 
     navLinks.forEach(link => {
@@ -159,3 +161,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+window.switchSerahTerimaTab = function(bulan) {
+    const titleEl = document.getElementById('serah-terima-title');
+    const iframeEl = document.getElementById('serah-terima-iframe');
+    const externalLinkEl = document.getElementById('serah-terima-external-link');
+    
+    if(titleEl) {
+        titleEl.textContent = 'Data Serah Terima - ' + bulan;
+    }
+    
+    const sheetLinks = {
+        'JANUARI': { id: '19S0wZPXQ4T_u2DMtrUyLXhSpLfUe0tjr', gid: '285912838' },
+        'FEBRUARI': { id: '1kpxuK-JXa-_lsZvBuNgeI6oFBYgjwGju', gid: '598924100' },
+        'MARET': { id: '1zNxrQc1z02yEXmCmvuvGAkkGlJcdwDPH', gid: '1005625293' },
+        'APRIL': { id: '1Cvt2EkqE2Y6s1Bh6n1VdAeJhj5nN9JKi', gid: '598924100' },
+        'MEI': { id: '1QnIiLqjlukWFNdvNC9EpV9yokE2AAZK2', gid: '' },
+        'JUNI': { id: '1SCO4kCpVMTCaMSOT8O2ITeLvU7H4IP8q', gid: '1552507215' },
+        'JULI': { id: '1CgqNafwEk3A32l3eiwcf8h4wO93sUg6h', gid: '1185985398' },
+        'AGUSTUS': { id: '1kpxuK-JXa-_lsZvBuNgeI6oFBYgjwGju', gid: '1504484096' }
+    };
+
+    if(sheetLinks[bulan]) {
+        let embedUrl = `https://docs.google.com/spreadsheets/d/${sheetLinks[bulan].id}/htmlembed?widget=true&headers=false`;
+        let editUrl = `https://docs.google.com/spreadsheets/d/${sheetLinks[bulan].id}/edit`;
+        
+        if (sheetLinks[bulan].gid) {
+            embedUrl += `&gid=${sheetLinks[bulan].gid}`;
+            editUrl += `?gid=${sheetLinks[bulan].gid}`;
+        }
+        
+        if(iframeEl) iframeEl.src = embedUrl;
+        if(externalLinkEl) externalLinkEl.href = editUrl;
+    }
+    
+    const tabs = document.querySelectorAll('#view-serah-terima .tab-btn');
+    tabs.forEach(tab => {
+        if(tab.textContent.toUpperCase() === bulan) {
+            tab.classList.add('active');
+            tab.style.background = 'var(--primary)';
+            tab.style.color = 'white';
+            tab.style.fontWeight = '600';
+        } else {
+            tab.classList.remove('active');
+            tab.style.background = 'rgba(255,255,255,0.1)';
+            tab.style.color = 'var(--text-color)';
+            tab.style.fontWeight = 'normal';
+        }
+    });
+};
