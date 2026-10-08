@@ -270,6 +270,76 @@
             <section id="view-sales" class="view-section hidden">
                 <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
+                        <h2>AKTUAL SALES HARIAN STORE (Tracking Data Kosong)</h2>
+                        <p class="sub-text m-0">Upload file Excel dari SharePoint untuk melihat kolom yang belum diisi.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="sheetSelector" class="styled-select" style="display: none; min-width: 200px; padding: 8px;" onchange="renderSelectedSheet()"></select>
+                        <input type="file" id="localExcelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelUpload(event)">
+                        <button class="btn-success" onclick="document.getElementById('localExcelFile').click()"><i class="ti ti-upload"></i> Upload & Cek File Excel</button>
+                    </div>
+                </div>
+
+                <div class="glass-panel mb-5" style="padding: 0; overflow: hidden;">
+                    <div class="excel-container" style="max-height: 500px; overflow-y: auto;">
+                        <table class="excel-table" id="aktual-sales-table">
+                            <thead>
+                                <tr class="header-tier-1">
+                                    <th rowspan="2" class="border-right" style="vertical-align: middle;">NO</th>
+                                    <th rowspan="2" class="border-right" style="vertical-align: middle;"># STORE</th>
+                                    <th rowspan="2" class="border-right" style="vertical-align: middle;">STORE</th>
+                                    <th rowspan="2" class="border-right" style="vertical-align: middle;">OPENING DATE</th>
+                                    <th rowspan="2" class="border-right" style="vertical-align: middle;">TYPE</th>
+                                    <th colspan="31" style="text-align: center; background-color: #d1d5db; color: black; border-bottom: 1px solid #9ca3af;">AKTUAL SALES TANGGAL</th>
+                                </tr>
+                                <tr class="header-tier-2" style="background-color: #f3f4f6; color: black;">
+                                    @for ($i = 1; $i <= 31; $i++)
+                                        <th style="min-width: 60px; border-right: 1px solid #9ca3af;">{{ $i }}</th>
+                                    @endfor
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- AREA 17 -->
+                                <tr style="background-color: #e2e8f0; font-weight: bold; color: black;">
+                                    <td colspan="5" class="text-left border-right" style="padding-left: 10px;">AREA 17</td>
+                                    @for ($i = 1; $i <= 31; $i++) <td style="border-right: 1px solid #9ca3af;"></td> @endfor
+                                </tr>
+                                <tr class="data-row">
+                                    <td class="border-right">1</td><td class="border-right">A09</td><td class="border-right text-left" style="padding-left: 5px;">SUN PLAZA MEDAN</td><td class="border-right">04-Okt-2023</td><td class="border-right">Mall</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true">10.054.455</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true">13.054.554</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true">15.420.515</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true"></td>
+                                    @for ($i = 5; $i <= 31; $i++) <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true"></td> @endfor
+                                </tr>
+                                <tr class="data-row">
+                                    <td class="border-right">2</td><td class="border-right">A10</td><td class="border-right text-left" style="padding-left: 5px;">BING KOU MEDAN</td><td class="border-right">20-Des-2023</td><td class="border-right">Stand Alone</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true">20.500.000</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true">19.200.000</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true"></td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true"></td>
+                                    @for ($i = 5; $i <= 31; $i++) <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true"></td> @endfor
+                                </tr>
+                                <!-- AREA 18 -->
+                                <tr style="background-color: #e2e8f0; font-weight: bold; color: black;">
+                                    <td colspan="5" class="text-left border-right" style="padding-left: 10px;">AREA 18</td>
+                                    @for ($i = 1; $i <= 31; $i++) <td style="border-right: 1px solid #9ca3af;"></td> @endfor
+                                </tr>
+                                <tr class="data-row">
+                                    <td class="border-right">1</td><td class="border-right">A01</td><td class="border-right text-left" style="padding-left: 5px;">LIVING WORLD PEKAN BARU</td><td class="border-right">04-Jan-2020</td><td class="border-right">Mall</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true">12.000.000</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true"></td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true">11.500.000</td>
+                                    <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true"></td>
+                                    @for ($i = 5; $i <= 31; $i++) <td style="background-color: yellow; color: black; border-right: 1px solid #9ca3af;" contenteditable="true"></td> @endfor
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
                         <h2>HARIAN SALES PERFORMANCE REGIONAL 5 TH 2026</h2>
                         <p class="sub-text m-0">Rekapitulasi Kinerja Seluruh Area (SharePoint Sync)</p>
                     </div>
@@ -539,6 +609,189 @@
                     alert("Terjadi kesalahan jaringan atau konfigurasi Google API Client belum selesai.");
                     console.error(error);
                 });
+        }
+
+        // Include SheetJS dynamically if not already present
+        if(typeof XLSX === 'undefined') {
+            let script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+            document.head.appendChild(script);
+        }
+
+        let globalWorkbook = null;
+
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    globalWorkbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Populate sheet selector (hanya sheet yang tidak di-hide)
+                    const sheetSelector = document.getElementById('sheetSelector');
+                    sheetSelector.innerHTML = '';
+                    
+                    globalWorkbook.SheetNames.forEach((name, index) => {
+                        let isHidden = false;
+                        // SheetJS menyimpan status hidden di workbook.Workbook.Sheets
+                        if(globalWorkbook.Workbook && globalWorkbook.Workbook.Sheets && globalWorkbook.Workbook.Sheets[index]) {
+                            const hiddenState = globalWorkbook.Workbook.Sheets[index].Hidden;
+                            if(hiddenState === 1 || hiddenState === 2) {
+                                isHidden = true;
+                            }
+                        }
+
+                        if(!isHidden) {
+                            let option = document.createElement('option');
+                            option.value = name;
+                            option.text = name;
+                            sheetSelector.appendChild(option);
+                        }
+                    });
+                    
+                    sheetSelector.style.display = 'block';
+
+                    // Default select: Cari sheet yang namanya ada kata 'AKTUAL', jika tidak ada pilih index 4 atau 0
+                    let isSelected = false;
+                    for(let i = 0; i < sheetSelector.options.length; i++) {
+                        if(sheetSelector.options[i].value.toUpperCase().includes('AKTUAL')) {
+                            sheetSelector.selectedIndex = i;
+                            isSelected = true;
+                            break;
+                        }
+                    }
+                    
+                    if(!isSelected && sheetSelector.options.length > 4) {
+                        sheetSelector.selectedIndex = 4; // Sheet ke-5 dari yang visible
+                    }
+                    
+                    renderSelectedSheet();
+                } catch(error) {
+                    alert("Gagal membaca file Excel. Pastikan file valid.");
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderSelectedSheet() {
+            if(!globalWorkbook) return;
+            const sheetSelector = document.getElementById('sheetSelector');
+            const sheetName = sheetSelector.value;
+            const worksheet = globalWorkbook.Sheets[sheetName];
+            
+            // Convert ke JSON array (array of arrays) dengan raw: false agar format tanggal Excel (Opening Date) terbaca benar
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false});
+            processExcelData(jsonData, sheetName);
+        }
+
+        function processExcelData(data, sheetName) {
+            const tbody = document.querySelector('#aktual-sales-table tbody');
+            tbody.innerHTML = ''; // Bersihkan tabel mockup lama
+            
+            let missingDataAlerts = [];
+            let currentDay = 4; // Contoh batas pengecekan hari ini (bisa diubah dinamis)
+
+            // Dapatkan nama bulan saat ini
+            const currentDate = new Date();
+            const monthsIndo = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+            const currentMonthStr = monthsIndo[currentDate.getMonth()]; // misal: "OKTOBER"
+
+            let foundMonthCol = 0;
+            // Cari posisi teks "OKTOBER" di baris header
+            for (let r = 0; r < 10 && r < data.length; r++) {
+                if (data[r]) {
+                    for (let c = 0; c < data[r].length; c++) {
+                        if (String(data[r][c]).toUpperCase().includes(currentMonthStr)) {
+                            foundMonthCol = c;
+                            r = 10;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Auto-detect kolom pertama tanggal (mencari angka 1, 2, 3 berurutan)
+            let startDateIndex = 5; // Default fallback
+            for (let r = 0; r < 10 && r < data.length; r++) {
+                if (data[r]) {
+                    for (let c = 0; c < data[r].length; c++) {
+                        if (String(data[r][c]).trim() === '1' && String(data[r][c+1]).trim() === '2' && String(data[r][c+2]).trim() === '3') {
+                            startDateIndex = c;
+                            // Jika kita menemukan angka 1 di dekat judul bulan saat ini, kita berhenti.
+                            // Jika tidak, kita terus mencari (akan berhenti di bulan terakhir/paling kanan)
+                            if (foundMonthCol > 0 && c >= foundMonthCol - 5) {
+                                r = 10; 
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Asumsi struktur row data dimulai setelah header (misal dari baris ke-4 ke atas)
+            let storeCount = 0;
+            data.forEach((row, rowIndex) => {
+                // Lewati baris yang kosong atau header. Identifikasi baris store biasanya ada kode store di index 1 atau 2
+                if(row && row.length > 3 && typeof row[2] === 'string' && (row[2].includes('AREA') === false) && rowIndex > 2) {
+                    
+                    // Pastikan baris ini punya nomor urut (index 0)
+                    if(row[0] && !isNaN(row[0])) {
+                        storeCount++;
+                        const no = row[0];
+                        const storeCode = row[1] || '-';
+                        const storeName = row[2] || 'Unknown Store';
+                        const openingDate = row[3] || '-';
+                        const type = row[4] || '-';
+
+                        let tr = document.createElement('tr');
+                        tr.className = 'data-row';
+                        
+                        let html = `<td class="border-right">${no}</td>
+                                    <td class="border-right">${storeCode}</td>
+                                    <td class="border-right text-left" style="padding-left: 5px;">${storeName}</td>
+                                    <td class="border-right">${openingDate}</td>
+                                    <td class="border-right">${type}</td>`;
+                        
+                        // Kolom data tanggal 1 sampai 31
+                        for(let i = 1; i <= 31; i++) {
+                            const dataIndex = startDateIndex + i - 1;
+                            const cellValue = row[dataIndex] !== undefined ? row[dataIndex] : '';
+                            
+                            // Cek jika data kosong sampai dengan currentDay
+                            let isMissing = false;
+                            if(i <= currentDay && (cellValue === '' || cellValue === null || cellValue === undefined)) {
+                                isMissing = true;
+                                missingDataAlerts.push(`Store ${storeName} belum mengisi data tanggal ${i}.`);
+                            }
+
+                            let bgColor = isMissing ? '#ffebee' : 'yellow';
+                            let border = isMissing ? '2px solid red' : '1px solid #9ca3af';
+
+                            html += `<td style="background-color: ${bgColor}; color: black; border-right: ${border};" contenteditable="true">${cellValue}</td>`;
+                        }
+                        
+                        tr.innerHTML = html;
+                        tbody.appendChild(tr);
+                    }
+                }
+            });
+
+            if(storeCount === 0) {
+                alert(`Tidak menemukan format data store yang cocok di sheet "${sheetName}". Coba cek file Anda.`);
+                return;
+            }
+
+            if (missingDataAlerts.length > 0) {
+                alert(`Peringatan! Terdapat data yang belum diisi (Pengecekan s/d tgl ${currentDay}):\n\n` + 
+                      missingDataAlerts.slice(0, 10).join("\n") + 
+                      (missingDataAlerts.length > 10 ? `\n\n...dan ${missingDataAlerts.length - 10} data lainnya.` : ""));
+            } else {
+                alert(`Lengkap! Semua store sudah mengisi data s/d tanggal ${currentDay}.`);
+            }
         }
     </script>
 </body>
