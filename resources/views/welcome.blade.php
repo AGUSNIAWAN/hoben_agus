@@ -7,23 +7,37 @@
     <link rel="icon" type="image/png" href="{{ asset('hokben-icon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('style.css') }}?v={{ time() }}">
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+        // Early Theme Initialization to prevent flicker
+        (function() {
+            const savedTheme = localStorage.getItem('hokbenOpsTrackTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
 </head>
 <body>
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-area">
-                <img src="{{ asset('hokben-logo.svg') }}" alt="HokBen Official Logo" class="brand-img">
+                <img src="{{ asset('hokben-logo-clean.svg') }}" alt="HokBen Official Logo" class="brand-img" onerror="this.src='{{ asset('hokben-icon.png') }}'">
                 <div class="logo-text-group">
                     <span class="brand-title">Hok<span>Ben</span></span>
                     <span class="brand-subtitle">Ops Track Area 19</span>
                 </div>
             </div>
+
+            <!-- Store Location Badge -->
+            <div class="sidebar-location-badge">
+                <span class="pulsing-dot-green"></span>
+                <span>Area 19 • Palembang Icon</span>
+            </div>
+
             <nav class="nav-menu">
                 <a href="#" class="nav-link active" data-target="dashboard">
                     <i class="ti ti-layout-dashboard"></i> Dashboard Leader
@@ -50,6 +64,7 @@
                     <i class="ti ti-layout-kanban"></i> MONITORING KEGIATAN KANBAN
                 </a>
             </nav>
+
             <div class="user-profile" style="position: relative;">
                 <div class="avatar">
                     <i class="ti ti-user-circle"></i>
@@ -74,14 +89,28 @@
             <!-- Topbar -->
             <header class="topbar">
                 <div class="page-title">
+                    <div class="topbar-store-chip">
+                        <i class="ti ti-building-store"></i>
+                        <span>Hb Palembang Icon • Regional 5 Sumatera</span>
+                    </div>
                     <h1 id="current-page-title">Dashboard Monitoring</h1>
                     <p class="date" id="current-date"></p>
                 </div>
-                <div class="topbar-actions" style="display: flex; gap: 16px; align-items: center;">
-                    <form method="GET" action="{{ route('dashboard') }}" id="periodForm">
-                        <input type="month" name="period" value="{{ $currentPeriod }}" class="styled-input" style="padding: 6px 12px;" onchange="document.getElementById('periodForm').submit()">
+                <div class="topbar-actions">
+                    <form method="GET" action="{{ route('dashboard') }}" id="periodForm" style="margin: 0;">
+                        <input type="month" name="period" value="{{ $currentPeriod }}" class="styled-input period-selector" style="padding: 8px 14px; height: 42px; border-radius: 10px;" onchange="document.getElementById('periodForm').submit()">
                     </form>
                     
+                    <button type="button" class="btn-quick-action" onclick="document.querySelector('[data-target=\'staff-portal\']').click()" title="Buka Portal Staff">
+                        <i class="ti ti-file-upload"></i>
+                        <span>Upload Form</span>
+                    </button>
+
+                    <!-- Theme Toggle (Light / Dark) -->
+                    <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme" onclick="toggleDashboardTheme()" title="Ganti Tema (Terang/Gelap)">
+                        <i class="ti ti-moon" id="themeIcon"></i>
+                    </button>
+
                     <!-- Notification Bell with Interactive Dropdown -->
                     <div class="notif-dropdown-wrapper">
                         <button class="icon-btn" id="notifBtn" aria-label="Notifications" onclick="toggleNotifications(event)">
@@ -160,6 +189,30 @@
             syncSerahTerima: "{{ route('api.sync.serah_terima') }}",
             syncKfmHelpdesk: "{{ route('api.sync.kfm_helpdesk') }}"
         };
+
+        // Theme Toggle Functionality
+        function toggleDashboardTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('hokbenOpsTrackTheme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeIcon');
+            if (!icon) return;
+            if (theme === 'dark') {
+                icon.className = 'ti ti-sun';
+            } else {
+                icon.className = 'ti ti-moon';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            updateThemeIcon(currentTheme);
+        });
     </script>
 
     <!-- Application Core & Feature Modules -->
