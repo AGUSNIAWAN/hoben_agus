@@ -2,46 +2,48 @@
 
 namespace App\Services;
 
-use Google_Client;
-use Google_Service_Sheets;
 use Exception;
+use Illuminate\Support\Facades\Http;
 
 class GoogleSheetService
 {
-    protected $client;
-    protected $service;
-
     public function __construct()
     {
-        $this->client = new Google_Client();
-        $this->client->setApplicationName('HokBen Monitoring App');
-        $this->client->setScopes([Google_Service_Sheets::SPREADSHEETS_READONLY]);
-        
-        // Cek jika ada kredensial service account
-        $credentialsPath = storage_path('app/google-credentials.json');
-        
-        if (file_exists($credentialsPath)) {
-            $this->client->setAuthConfig($credentialsPath);
-        } else {
-            // Uncomment the line below to show an exception if credentials are required immediately
-            // throw new Exception("Google Service Account credentials file not found at: {$credentialsPath}");
-        }
-
-        $this->service = new Google_Service_Sheets($this->client);
+        // Tidak perlu inisialisasi Google Client karena menggunakan metode bypass CSV
     }
 
     /**
-     * Membaca data dari Spreadsheet
+     * Membaca data dari Spreadsheet menggunakan format CSV (Bypass Publik)
      *
      * @param string $spreadsheetId ID dari Google Spreadsheet (dari URL)
-     * @param string $range Rentang data (contoh: 'Sheet1!A1:E')
+     * @param string $gid ID dari sheet khusus (bisa dilihat di URL bagian gid=...)
      * @return array
      */
-    public function readSheet($spreadsheetId, $range)
+    public function readSheetCsv($spreadsheetId, $gid = '0')
     {
+        $url = "https://docs.google.com/spreadsheets/d/{$spreadsheetId}/export?format=csv&gid={$gid}";
+
         try {
-            $response = $this->service->spreadsheets_values->get($spreadsheetId, $range);
-            return $response->getValues() ?? [];
+            $response = Http::withOptions(['follow_redirects' => true])->get($url);
+
+            if (!$response->successful()) {
+                throw new Exception("Gagal mengambil data. Pastikan Google Sheet sudah diatur ke 'Anyone with the link can view'.");
+            }
+
+            $csvData = $response->body();
+            $rows = [];
+            
+            // Parse CSV dengan aman
+            $stream = fopen('php://temp', 'r+');
+            fwrite($stream, $csvData);
+            rewind($stream);
+            
+            while (($data = fgetcsv($stream)) !== false) {
+                $rows[] = $data;
+            }
+            fclose($stream);
+            
+            return $rows;
         } catch (Exception $e) {
             throw new Exception("Error reading from Google Sheet: " . $e->getMessage());
         }
