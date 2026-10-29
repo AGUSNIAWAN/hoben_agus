@@ -907,23 +907,47 @@ body {
 
 .checklist {
     list-style: none;
-    margin-top: 16px;
+    margin-top: 14px;
 }
 
 .checklist li {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border-color);
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-subtle);
     display: flex;
     align-items: center;
     gap: 12px;
     font-size: 0.92rem;
     color: var(--text-body);
+    transition: all 0.2s ease;
+}
+
+.checklist li:hover {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: var(--panel-bg);
+}
+
+.checklist li.completed {
+    border-color: rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.06);
+}
+
+.checklist li.completed label {
+    color: var(--text-muted);
+}
+
+.checklist label {
+    cursor: pointer;
+    flex: 1;
+    user-select: none;
 }
 
 .checklist input[type="checkbox"] {
     width: 18px;
     height: 18px;
-    accent-color: var(--hokben-yellow-dark);
+    accent-color: #10b981;
     cursor: pointer;
 }
 
@@ -1158,12 +1182,86 @@ body {
 .kanban-activity-card.card-review::before { background: #FFC400; }
 .kanban-activity-card.card-done::before { background: #10b981; }
 
+.card-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.card-priority-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.card-priority-badge.priority-high {
+    background: rgba(239, 68, 68, 0.14);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.card-priority-badge.priority-medium {
+    background: rgba(245, 158, 11, 0.14);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.card-priority-badge.priority-low {
+    background: rgba(148, 163, 184, 0.14);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.card-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.card-action-btn {
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.card-action-btn.edit-btn {
+    color: #3b82f6;
+}
+
+.card-action-btn.edit-btn:hover {
+    background: rgba(59, 130, 246, 0.15);
+    transform: scale(1.1);
+}
+
+.card-action-btn.delete-btn {
+    color: #ef4444;
+}
+
+.card-action-btn.delete-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    transform: scale(1.1);
+}
+
 .card-header-row .card-title {
     font-size: 0.92rem;
     font-weight: 700;
     color: var(--text-main);
     line-height: 1.35;
-    margin: 0;
+    margin: 0 0 6px 0;
 }
 
 .card-desc {
@@ -1314,29 +1412,141 @@ body {
 .mt-4 { margin-top: 16px; }
 .mb-4 { margin-bottom: 16px; }
 
+.sidebar-close-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    margin-left: auto;
+}
+
+.sidebar-close-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-toggle-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-main);
+    font-size: 1.35rem;
+    cursor: pointer;
+    box-shadow: var(--panel-shadow);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mobile-menu-toggle-btn:hover {
+    border-color: var(--hokben-yellow-dark);
+    color: var(--hokben-yellow-dark);
+    transform: scale(1.04);
+}
+
+.sidebar-backdrop {
+    display: none;
+}
+
 /* Responsive adjustments */
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr !important;
+    }
     .metrics-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
     }
     .content-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
     .staff-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+    }
+    
+    .mobile-menu-toggle-btn {
+        display: flex !important;
+    }
+    .sidebar-close-btn {
+        display: flex !important;
+    }
+    
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 998;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sidebar-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .app-container {
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 290px !important;
+        max-width: 85vw !important;
+        height: 100vh !important;
+        z-index: 999 !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s ease !important;
+        box-shadow: none !important;
+    }
+
+    .sidebar.open {
+        transform: translateX(0) !important;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.7) !important;
+    }
+
+    .main-content {
+        padding: 20px 16px !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
+    }
+    
+    .topbar {
+        margin-bottom: 20px !important;
+        gap: 12px !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .page-title h1 {
+        font-size: 1.45rem !important;
     }
 }
 
-@media (max-width: 800px) {
-    .app-container {
-        flex-direction: column;
+@media (max-width: 640px) {
+    .metrics-grid {
+        grid-template-columns: 1fr !important;
     }
-    .sidebar {
+    .topbar-actions {
         width: 100%;
-        min-width: 100%;
-        height: auto;
+        justify-content: space-between;
     }
-    .main-content {
-        padding: 20px 16px;
+    .topbar-actions .period-selector {
+        flex-grow: 1;
     }
 }

@@ -38,15 +38,98 @@
                 @enderror
             </div>
 
-            <div class="form-group mb-4">
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Batas Waktu / Deadline (Opsional)</label>
-                <input type="datetime-local" name="deadline" class="styled-input" style="width: 100%; background: #1e293b; color: #fff;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;" class="mb-4">
+                <div class="form-group" style="margin: 0;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Tingkat Prioritas *</label>
+                    <select name="priority" required class="styled-input" style="width: 100%; background: #1e293b; color: #fff;">
+                        <option value="high">🔥 Urgent (Tinggi)</option>
+                        <option value="medium" selected>⚡ Normal (Sedang)</option>
+                        <option value="low">✓ Rutin (Rendah)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin: 0;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Batas Waktu (Opsional)</label>
+                    <input type="datetime-local" name="deadline" class="styled-input" style="width: 100%; background: #1e293b; color: #fff;">
+                </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
                 <button type="button" class="btn-outline" onclick="closeTaskModal()" style="padding: 8px 16px;">Batal</button>
                 <button type="submit" class="btn-primary" style="padding: 8px 20px; display: flex; align-items: center; gap: 6px;">
                     <i class="ti ti-check"></i> Simpan Kegiatan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Edit Kegiatan Baru -->
+<div id="edit-task-modal" class="modal">
+    <div class="modal-content glass-panel" style="max-width: 500px; width: 90%;">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; color: #fff;">
+                <i class="ti ti-edit" style="color: var(--hokben-yellow);"></i> Edit Rincian Kegiatan
+            </h3>
+            <button type="button" class="close-modal" onclick="closeEditTaskModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <form id="edit-task-form" method="POST" action="">
+            @csrf
+            @method('PUT')
+            <input type="hidden" id="edit-task-id" name="id">
+
+            <div class="form-group mb-3">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Judul Kegiatan *</label>
+                <input type="text" name="title" id="edit-task-title" required class="styled-input" placeholder="Judul kegiatan operasional..." style="width: 100%;">
+            </div>
+
+            <div class="form-group mb-3">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Deskripsi / Instruksi Tambahan</label>
+                <textarea name="description" id="edit-task-desc" rows="3" class="styled-input" placeholder="Rincian instruksi pekerjaan..." style="width: 100%;"></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;" class="mb-3">
+                <div class="form-group" style="margin: 0;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Tingkat Prioritas *</label>
+                    <select name="priority" id="edit-task-priority" required class="styled-input" style="width: 100%; background: #1e293b; color: #fff;">
+                        <option value="high">🔥 Urgent (Tinggi)</option>
+                        <option value="medium">⚡ Normal (Sedang)</option>
+                        <option value="low">✓ Rutin (Rendah)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin: 0;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Kolom Status</label>
+                    <select name="status" id="edit-task-status" required class="styled-input" style="width: 100%; background: #1e293b; color: #fff;">
+                        <option value="todo">To Do</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="review">Review</option>
+                        <option value="done">Done / Selesai</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Petugas / PIC Bertanggung Jawab *</label>
+                <select name="user_id" id="edit-task-user" required class="styled-input" style="width: 100%; background: #1e293b; color: #fff;">
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group mb-4">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Batas Waktu / Deadline</label>
+                <input type="datetime-local" name="deadline" id="edit-task-deadline" class="styled-input" style="width: 100%; background: #1e293b; color: #fff;">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+                <button type="button" class="btn-outline" onclick="closeEditTaskModal()" style="padding: 8px 16px;">Batal</button>
+                <button type="submit" class="btn-primary" style="padding: 8px 20px; display: flex; align-items: center; gap: 6px;">
+                    <i class="ti ti-device-floppy"></i> Simpan Perubahan
                 </button>
             </div>
         </form>

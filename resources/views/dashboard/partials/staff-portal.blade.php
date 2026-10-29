@@ -28,21 +28,38 @@
     <div class="staff-grid">
         <!-- Checklist Aktivitas Harian Staf -->
         <div class="glass-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h2 style="margin: 0;">Checklist Aktivitas (<span id="active-shift-label">Opening</span>)</h2>
-                <span class="badge" style="background: rgba(255,196,0,0.15); color: #FFC400; padding: 4px 10px; border-radius: 20px; font-size: 12px;">
-                    {{ Auth::user()->division ?? 'All Division' }}
-                </span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <span>Checklist Aktivitas (<span id="active-shift-label">Opening</span>)</span>
+                    </h2>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin: 3px 0 0 0;" id="shift-status-subtext">
+                        Kepatuhan SOP gerai • <span id="checklist-progress-text">0/4 selesai</span>
+                    </p>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span id="checklist-saved-badge" class="badge-status warning">
+                        <i class="ti ti-clock"></i> Belum Disimpan
+                    </span>
+                    <span class="badge" style="background: rgba(255,196,0,0.15); color: #FFC400; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">
+                        {{ Auth::user()->division ?? 'All Division' }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Progress Bar Kelengkapan Checklist Shift -->
+            <div style="margin-bottom: 16px; background: var(--border-color); border-radius: 9999px; height: 6px; overflow: hidden;">
+                <div id="checklist-progress-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981 0%, #059669 100%); transition: width 0.35s ease;"></div>
             </div>
             
             <ul class="checklist" id="daily-checklist">
-                <!-- Populated by JS based on shift selection -->
+                <!-- Populated by JS based on shift selection and saved database state -->
             </ul>
 
             <button type="button" class="btn-primary full-width mt-4" id="btn-save-checklist" onclick="saveShiftChecklist()">
                 <i class="ti ti-device-floppy"></i> Simpan Checklist ke Database
             </button>
-            <div id="checklist-feedback" style="display: none; padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 13px; text-align: center;"></div>
+            <div id="checklist-feedback" style="display: none; padding: 12px 16px; border-radius: 8px; margin-top: 14px; font-size: 13px; text-align: center; font-weight: 600;"></div>
         </div>
 
         <!-- Upload Form & Modul ke Server -->

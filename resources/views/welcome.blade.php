@@ -12,6 +12,8 @@
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- Chart.js for Leader Dashboard Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         // Early Theme Initialization to prevent flicker
         (function() {
@@ -21,15 +23,22 @@
     </script>
 </head>
 <body>
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar(false)"></div>
+
     <div class="app-container">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="appSidebar">
             <div class="logo-area">
                 <img src="{{ asset('hokben-logo-clean.svg') }}" alt="HokBen Official Logo" class="brand-img" onerror="this.src='{{ asset('hokben-icon.png') }}'">
                 <div class="logo-text-group">
                     <span class="brand-title">Hok<span>Ben</span></span>
                     <span class="brand-subtitle">Ops Track Area 19</span>
                 </div>
+                <!-- Mobile Close Button -->
+                <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Tutup Menu" onclick="toggleMobileSidebar(false)">
+                    <i class="ti ti-x"></i>
+                </button>
             </div>
 
             <!-- Store Location Badge -->
@@ -63,6 +72,9 @@
                 <a href="#" class="nav-link" data-target="monitoring-kegiatan">
                     <i class="ti ti-layout-kanban"></i> MONITORING KEGIATAN KANBAN
                 </a>
+                <a href="#" class="nav-link" data-target="promo-sep" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
+                    <i class="ti ti-rosette-discount" style="color: #F59E0B;"></i> REKAP PROMO SEPTEMBER
+                </a>
             </nav>
 
             <div class="user-profile" style="position: relative;">
@@ -88,14 +100,22 @@
         <main class="main-content">
             <!-- Topbar -->
             <header class="topbar">
-                <div class="page-title">
-                    <div class="topbar-store-chip">
-                        <i class="ti ti-building-store"></i>
-                        <span>Hb Palembang Icon • Regional 5 Sumatera</span>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <!-- Mobile Hamburger Button -->
+                    <button type="button" class="mobile-menu-toggle-btn" id="mobileMenuToggle" aria-label="Buka Menu" onclick="toggleMobileSidebar(true)" title="Buka Menu Navigasi">
+                        <i class="ti ti-menu-2"></i>
+                    </button>
+
+                    <div class="page-title">
+                        <div class="topbar-store-chip">
+                            <i class="ti ti-building-store"></i>
+                            <span>Hb Palembang Icon • Regional 5 Sumatera</span>
+                        </div>
+                        <h1 id="current-page-title">Dashboard Monitoring</h1>
+                        <p class="date" id="current-date"></p>
                     </div>
-                    <h1 id="current-page-title">Dashboard Monitoring</h1>
-                    <p class="date" id="current-date"></p>
                 </div>
+
                 <div class="topbar-actions">
                     <form method="GET" action="{{ route('dashboard') }}" id="periodForm" style="margin: 0;">
                         <input type="month" name="period" value="{{ $currentPeriod }}" class="styled-input period-selector" style="padding: 8px 14px; height: 42px; border-radius: 10px;" onchange="document.getElementById('periodForm').submit()">
@@ -172,6 +192,7 @@
             @include('dashboard.partials.preshift-monitoring')
             @include('dashboard.partials.kfm-helpdesk')
             @include('dashboard.partials.kanban')
+            @include('dashboard.partials.promo-sep')
 
         </main>
     </div>
@@ -182,21 +203,45 @@
     <!-- SheetJS Library for Client-side Excel Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- Route & Config Injection for External JS Files -->
+    <!-- Route & Injected State for External JS Files -->
     <script>
+        window.userTodayChecklists = @json($userTodayActivities ?? []);
+        window.dashboardChartData = @json($chartData ?? []);
         window.opsTrackRoutes = {
             syncArea19: "{{ route('api.sync.area19') }}",
             syncSerahTerima: "{{ route('api.sync.serah_terima') }}",
             syncKfmHelpdesk: "{{ route('api.sync.kfm_helpdesk') }}"
         };
 
-        // Theme Toggle Functionality
+        // Mobile Sidebar Drawer Toggle Functionality
+        function toggleMobileSidebar(force) {
+            const sidebar = document.getElementById('appSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (!sidebar) return;
+
+            const shouldOpen = force !== undefined ? force : !sidebar.classList.contains('open');
+            if (shouldOpen) {
+                sidebar.classList.add('open');
+                if (backdrop) backdrop.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.remove('open');
+                if (backdrop) backdrop.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Theme Toggle Functionality with Chart.js Dynamic Recolor
         function toggleDashboardTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('hokbenOpsTrackTheme', newTheme);
             updateThemeIcon(newTheme);
+
+            if (typeof window.updateChartsTheme === 'function') {
+                window.updateChartsTheme(newTheme);
+            }
         }
 
         function updateThemeIcon(theme) {
@@ -212,6 +257,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             updateThemeIcon(currentTheme);
+
+            // Auto close mobile drawer when any navigation link is clicked
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) {
+                        toggleMobileSidebar(false);
+                    }
+                });
+            });
         });
     </script>
 

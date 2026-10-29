@@ -19,7 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'serah-terima': 'Serah Terima Sales & Modal Harian',
         'monitoring-preshift-area19': 'MONITORING PRE-SHIFT ONLINE AREA 19',
         'monitoring-kfm-helpdesk': 'MONITORING KFM DAN HELPDESK',
-        'monitoring-kegiatan': 'MONITORING KEGIATAN KANBAN'
+        'monitoring-kegiatan': 'MONITORING KEGIATAN KANBAN',
+        'promo-sep': 'REKAP PROMO SEPTEMBER 2026'
     };
 
     function switchView(targetId) {
@@ -49,6 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Resize charts jika membuka dashboard
+        if (targetId === 'dashboard') {
+            setTimeout(() => {
+                if (window.complianceChartInstance) window.complianceChartInstance.resize();
+                if (window.salesTrendsChartInstance) window.salesTrendsChartInstance.resize();
+            }, 60);
+        }
+
         // Store active tab
         localStorage.setItem('activeOpsTrackTab', targetId);
     }
@@ -69,6 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (savedTab && titles[savedTab] && savedTab !== 'dashboard') {
         switchView(savedTab);
     }
+
+    // Inisialisasi Grafik Chart.js Dashboard Leader
+    initDashboardCharts();
 
     // Staff Portal Logic: Shift & Checklist
     const shiftRadios = document.querySelectorAll('input[name="shift"]');
@@ -96,19 +108,82 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
+    function updateChecklistProgress() {
+        const checkboxes = document.querySelectorAll('#daily-checklist input[type="checkbox"]');
+        const total = checkboxes.length;
+        let checkedCount = 0;
+        checkboxes.forEach(cb => {
+            const li = cb.closest('li');
+            if (cb.checked) {
+                checkedCount++;
+                if (li) li.classList.add('completed');
+            } else {
+                if (li) li.classList.remove('completed');
+            }
+        });
+
+        const percent = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+        const progressFill = document.getElementById('checklist-progress-fill');
+        const progressText = document.getElementById('checklist-progress-text');
+        if (progressFill) progressFill.style.width = percent + '%';
+        if (progressText) progressText.textContent = `${checkedCount}/${total} selesai (${percent}%)`;
+    }
+
     function renderChecklist(shift) {
         if (shiftLabel) shiftLabel.textContent = shift;
         if (!checklistUl) return;
 
         checklistUl.innerHTML = '';
-        (checklists[shift] || []).forEach((task, idx) => {
+        const defaultTasks = checklists[shift] || [];
+
+        // Ambil data checklist yang tersimpan dari database untuk shift ini (jika ada)
+        const savedRecord = window.userTodayChecklists && window.userTodayChecklists[shift];
+        const savedItems = savedRecord && Array.isArray(savedRecord.checklist_data) ? savedRecord.checklist_data : null;
+
+        const badgeEl = document.getElementById('checklist-saved-badge');
+
+        if (savedRecord) {
+            if (badgeEl) {
+                badgeEl.className = 'badge-status success';
+                badgeEl.innerHTML = '<i class="ti ti-circle-check"></i> Tersimpan di Database';
+            }
+        } else {
+            if (badgeEl) {
+                badgeEl.className = 'badge-status warning';
+                badgeEl.innerHTML = '<i class="ti ti-clock"></i> Belum Disimpan';
+            }
+        }
+
+        defaultTasks.forEach((task, idx) => {
+            let isChecked = false;
+
+            if (savedItems) {
+                // Cocokkan task berdasarkan nama tugas atau urutan indeks
+                const found = savedItems.find(it => it.task && it.task.trim().toLowerCase() === task.trim().toLowerCase());
+                if (found) {
+                    isChecked = Boolean(found.completed);
+                } else if (savedItems[idx] && typeof savedItems[idx].completed !== 'undefined') {
+                    isChecked = Boolean(savedItems[idx].completed);
+                }
+            }
+
             const li = document.createElement('li');
+            if (isChecked) li.classList.add('completed');
+
             li.innerHTML = `
-                <input type="checkbox" id="task-${idx}" checked>
+                <input type="checkbox" id="task-${idx}" ${isChecked ? 'checked' : ''}>
                 <label for="task-${idx}">${task}</label>
             `;
+
+            const cb = li.querySelector('input[type="checkbox"]');
+            cb.addEventListener('change', () => {
+                updateChecklistProgress();
+            });
+
             checklistUl.appendChild(li);
         });
+
+        updateChecklistProgress();
     }
 
     shiftRadios.forEach(radio => {
@@ -117,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Inisialisasi checklist opening
+    // Inisialisasi checklist opening dari data database
     renderChecklist('Opening');
 
     // Drag and Drop Upload logic di Staff Portal
@@ -221,7 +296,20 @@ window.saveShiftChecklist = function() {
                 feedbackEl.style.background = 'rgba(16, 185, 129, 0.15)';
                 feedbackEl.style.color = '#10b981';
                 feedbackEl.style.border = '1px solid #10b981';
-                feedbackEl.textContent = data.message;
+                feedbackEl.innerHTML = '<i class="ti ti-circle-check"></i> ' + data.message;
+
+                // Perbarui cache data frontend secara reaktif
+                if (!window.userTodayChecklists) window.userTodayChecklists = {};
+                if (data.activity) {
+                    window.userTodayChecklists[shift] = data.activity;
+                }
+
+                // Perbarui badge
+                const badgeEl = document.getElementById('checklist-saved-badge');
+                if (badgeEl) {
+                    badgeEl.className = 'badge-status success';
+                    badgeEl.innerHTML = '<i class="ti ti-circle-check"></i> Tersimpan di Database';
+                }
             } else {
                 feedbackEl.style.background = 'rgba(239, 68, 68, 0.15)';
                 feedbackEl.style.color = '#ef4444';
@@ -402,3 +490,220 @@ document.addEventListener('click', (e) => {
         }
     }
 });
+
+/* ==========================================================================
+   CHART.JS - DASHBOARD LEADER ANALYTICS (TREN KEPATUHAN & SALES HARIAN)
+   ========================================================================== */
+window.complianceChartInstance = null;
+window.salesTrendsChartInstance = null;
+
+function initDashboardCharts() {
+    const complianceCanvas = document.getElementById('complianceChart');
+    const salesCanvas = document.getElementById('salesTrendsChart');
+    if (!complianceCanvas || !salesCanvas || typeof Chart === 'undefined') return;
+
+    // Hancurkan instance lama jika sudah ada (prevent canvas reuse error)
+    if (window.complianceChartInstance) {
+        window.complianceChartInstance.destroy();
+    }
+    if (window.salesTrendsChartInstance) {
+        window.salesTrendsChartInstance.destroy();
+    }
+
+    const data = window.dashboardChartData || {};
+    const labels = data.dates || ['19 Okt', '20 Okt', '21 Okt', '22 Okt', '23 Okt', '24 Okt', '25 Okt'];
+    const complianceValues = data.compliance || [88, 92, 85, 96, 90, 94, 98];
+    const submissionCounts = data.submissions || [3, 4, 3, 4, 4, 3, 4];
+    const actualSales = data.salesActual || [48.5, 52.0, 49.0, 56.4, 51.2, 54.8, 53.0];
+    const targetSales = data.salesTarget || [50, 50, 50, 50, 50, 50, 50];
+
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const isDark = currentTheme === 'dark';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+    const textColor = isDark ? '#cbd5e1' : '#64748b';
+
+    // Chart 1: Line & Area Kepatuhan SOP
+    const ctx1 = complianceCanvas.getContext('2d');
+    const gradientRed = ctx1.createLinearGradient(0, 0, 0, 260);
+    gradientRed.addColorStop(0, 'rgba(217, 34, 42, 0.35)');
+    gradientRed.addColorStop(1, 'rgba(217, 34, 42, 0.01)');
+
+    window.complianceChartInstance = new Chart(complianceCanvas, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '% Kepatuhan SOP',
+                    data: complianceValues,
+                    borderColor: '#D9222A',
+                    backgroundColor: gradientRed,
+                    fill: true,
+                    tension: 0.38,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#D9222A',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Modul Form Terverifikasi',
+                    data: submissionCounts,
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245, 158, 11, 0.85)',
+                    type: 'bar',
+                    borderRadius: 6,
+                    barThickness: 16,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: isDark ? '#ffffff' : '#0f172a',
+                    bodyColor: isDark ? '#cbd5e1' : '#334155',
+                    borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    boxPadding: 6,
+                    usePointStyle: true,
+                    callbacks: {
+                        label: function(context) {
+                            if (context.dataset.yAxisID === 'y') {
+                                return ` Kepatuhan SOP: ${context.parsed.y}%`;
+                            } else {
+                                return ` Form Masuk: ${context.parsed.y} Modul`;
+                            }
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: gridColor },
+                    ticks: { color: textColor, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    min: 50,
+                    max: 100,
+                    grid: { color: gridColor },
+                    ticks: {
+                        color: textColor,
+                        font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
+                        callback: function(val) { return val + '%'; }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: false,
+                    position: 'right',
+                    min: 0,
+                    max: 6,
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+
+    // Chart 2: Target vs Aktual Sales
+    window.salesTrendsChartInstance = new Chart(salesCanvas, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Aktual Sales (Juta Rp)',
+                    data: actualSales,
+                    backgroundColor: actualSales.map(val => val >= 50 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(245, 158, 11, 0.85)'),
+                    borderColor: actualSales.map(val => val >= 50 ? '#10b981' : '#f59e0b'),
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    barThickness: 16
+                },
+                {
+                    label: 'Target (Rp 50 Jt)',
+                    data: targetSales,
+                    type: 'line',
+                    borderColor: '#94a3b8',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: isDark ? '#ffffff' : '#0f172a',
+                    bodyColor: isDark ? '#cbd5e1' : '#334155',
+                    borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.dataset.label}: Rp ${context.parsed.y} Juta`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: gridColor },
+                    ticks: { color: textColor, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } }
+                },
+                y: {
+                    min: 40,
+                    max: 65,
+                    grid: { color: gridColor },
+                    ticks: {
+                        color: textColor,
+                        font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
+                        callback: function(val) { return val + ' Jt'; }
+                    }
+                }
+            }
+        }
+    });
+}
+
+window.updateChartsTheme = function(theme) {
+    const isDark = theme === 'dark';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+    const textColor = isDark ? '#cbd5e1' : '#64748b';
+
+    [window.complianceChartInstance, window.salesTrendsChartInstance].forEach(chart => {
+        if (!chart) return;
+        if (chart.options.scales.x) {
+            chart.options.scales.x.grid.color = gridColor;
+            chart.options.scales.x.ticks.color = textColor;
+        }
+        if (chart.options.scales.y) {
+            chart.options.scales.y.grid.color = gridColor;
+            chart.options.scales.y.ticks.color = textColor;
+        }
+        chart.update();
+    });
+};

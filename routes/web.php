@@ -24,7 +24,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/sync-kfm-helpdesk', [SheetSyncController::class, 'syncKfmHelpdesk'])->name('api.sync.kfm_helpdesk');
 
     // Manajemen Kegiatan Kanban
-    Route::resource('tasks', TaskController::class)->except(['show', 'edit', 'update']);
+    Route::resource('tasks', TaskController::class)->except(['show', 'edit']);
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update_status');
 
     // Input Checklist Harian Staf (Opsi A)

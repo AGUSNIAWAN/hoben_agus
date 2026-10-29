@@ -64,6 +64,50 @@
         </div>
     </div>
 
+    <!-- Analytics Charts Section (Chart.js) -->
+    <div class="charts-grid" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; margin-bottom: 24px;">
+        <!-- Chart 1: Tren Kepatuhan SOP & Dokumen (7 Hari Terakhir) -->
+        <div class="glass-panel" style="padding: 22px 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="ti ti-chart-line" style="color: var(--hokben-red); font-size: 1.25rem;"></i> Tren Kepatuhan SOP Gerai (7 Hari Terakhir)
+                    </h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 0 0;">Evaluasi persentase kepatuhan SOP harian & dokumen form terverifikasi.</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.78rem;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--hokben-red);">
+                        <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--hokben-red);"></span> % Kepatuhan
+                    </span>
+                    <span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--hokben-yellow-dark);">
+                        <span style="width: 10px; height: 10px; border-radius: 2px; background: var(--hokben-yellow-dark);"></span> Form Masuk
+                    </span>
+                </div>
+            </div>
+            <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="complianceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2: Performa Sales Harian & Target -->
+        <div class="glass-panel" style="padding: 22px 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="ti ti-chart-bar" style="color: var(--hokben-yellow-dark); font-size: 1.25rem;"></i> Target vs Aktual Sales (Juta Rp)
+                    </h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 0 0;">Monitoring pencapaian omzet harian Area 19.</p>
+                </div>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); padding: 4px 10px; border-radius: 8px; font-size: 0.76rem; font-weight: 700;">
+                    Target: Rp 50 Jt/hr
+                </span>
+            </div>
+            <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="salesTrendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content Grid -->
     <div class="content-grid">
         <div class="glass-panel main-panel">

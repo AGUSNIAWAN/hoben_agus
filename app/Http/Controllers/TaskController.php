@@ -10,10 +10,7 @@ class TaskController extends Controller
 {
     public function index()
     {
-        $tasks = Task::with('user')->get()->groupBy('status');
-        $users = User::all();
-        
-        return view('tasks.index', compact('tasks', 'users'));
+        return redirect()->to(route('dashboard') . '#monitoring-kegiatan');
     }
 
     public function store(Request $request)
@@ -22,14 +19,40 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
+            'priority' => 'nullable|in:low,medium,high',
             'deadline' => 'nullable|date',
         ]);
 
         $validated['status'] = 'todo';
+        $validated['priority'] = $validated['priority'] ?? 'medium';
 
         Task::create($validated);
 
-        return redirect()->back()->with('success', 'Kegiatan berhasil ditambahkan!');
+        return redirect()->back()->with('success', 'Kegiatan operasional berhasil ditambahkan!');
+    }
+
+    public function update(Request $request, Task $task)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'user_id' => 'required|exists:users,id',
+            'priority' => 'required|in:low,medium,high',
+            'status' => 'nullable|in:todo,in_progress,review,done',
+            'deadline' => 'nullable|date',
+        ]);
+
+        $task->update($validated);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Kegiatan berhasil diperbarui!',
+                'task' => $task->load('user')
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Kegiatan operasional berhasil diperbarui!');
     }
 
     public function updateStatus(Request $request, Task $task)
@@ -43,9 +66,17 @@ class TaskController extends Controller
         return response()->json(['success' => true]);
     }
     
-    public function destroy(Task $task)
+    public function destroy(Request $request, Task $task)
     {
         $task->delete();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Kegiatan berhasil dihapus!'
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Kegiatan berhasil dihapus!');
     }
 }

@@ -14,12 +14,23 @@
                 <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 1rem;"></i>
                 <input type="text" id="kanban-search" placeholder="Cari kegiatan atau PIC..." 
                        oninput="filterKanbanCards(this.value)"
-                       style="padding: 9px 14px 9px 36px; background: rgba(18, 24, 38, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.85rem; width: 220px; outline: none; transition: border 0.2s;"
+                       style="padding: 9px 14px 9px 36px; background: rgba(18, 24, 38, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.85rem; width: 200px; outline: none; transition: border 0.2s;"
                        onfocus="this.style.borderColor='var(--hokben-red)'"
                        onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
             </div>
+
+            <!-- Filter Prioritas Kegiatan -->
+            <select id="kanban-priority-filter" 
+                    onchange="filterKanbanCards(document.getElementById('kanban-search').value)"
+                    style="padding: 9px 12px; background: rgba(18, 24, 38, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; font-size: 0.85rem; outline: none; cursor: pointer;">
+                <option value="all">Semua Prioritas</option>
+                <option value="high">Urgent (Tinggi)</option>
+                <option value="medium">Normal (Sedang)</option>
+                <option value="low">Rutin (Rendah)</option>
+            </select>
+
             <button class="btn-primary" onclick="openTaskModal()" style="display: flex; align-items: center; gap: 8px; padding: 9px 18px; font-weight: 600; border-radius: 8px;">
-                <i class="ti ti-plus"></i> Tambah Kegiatan Baru
+                <i class="ti ti-plus"></i> Tambah Kegiatan
             </button>
         </div>
     </div>
@@ -72,22 +83,41 @@
             <div class="kanban-card-dropzone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, '{{ $statusKey }}')">
                 @if(isset($tasks[$statusKey]) && count($tasks[$statusKey]) > 0)
                     @foreach($tasks[$statusKey] as $task)
+                    @php
+                        $priority = $task->priority ?? 'medium';
+                        $priorityMeta = [
+                            'high' => ['label' => 'Urgent', 'class' => 'priority-high', 'icon' => 'ti-flame'],
+                            'medium' => ['label' => 'Normal', 'class' => 'priority-medium', 'icon' => 'ti-alert-circle'],
+                            'low' => ['label' => 'Rutin', 'class' => 'priority-low', 'icon' => 'ti-check'],
+                        ][$priority] ?? ['label' => 'Normal', 'class' => 'priority-medium', 'icon' => 'ti-alert-circle'];
+                    @endphp
                     <div class="kanban-activity-card card-{{ $statusKey }}" 
                          draggable="true" 
                          ondragstart="drag(event, {{ $task->id }})" 
                          id="task-{{ $task->id }}"
                          data-title="{{ strtolower($task->title) }}"
-                         data-user="{{ strtolower($task->user ? $task->user->name : '') }}">
+                         data-user="{{ strtolower($task->user ? $task->user->name : '') }}"
+                         data-priority="{{ $priority }}">
                         
-                        <div class="card-header-row">
-                            <h4 class="card-title">{{ $task->title }}</h4>
-                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kegiatan ini?');" style="margin: 0;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="card-delete-btn" title="Hapus Kegiatan">
+                        <!-- Top Priority Badge & Action Buttons -->
+                        <div class="card-meta-row">
+                            <span class="card-priority-badge {{ $priorityMeta['class'] }}">
+                                <i class="ti {{ $priorityMeta['icon'] }}"></i> {{ $priorityMeta['label'] }}
+                            </span>
+                            
+                            <div class="card-actions-group">
+                                <button type="button" class="card-action-btn edit-btn" title="Edit Rincian Kegiatan"
+                                        onclick="openEditTaskModal({{ $task->id }}, '{{ addslashes($task->title) }}', '{{ addslashes($task->description ?? '') }}', {{ $task->user_id }}, '{{ $priority }}', '{{ $task->status }}', '{{ $task->deadline ? $task->deadline->format('Y-m-d\TH:i') : '' }}')">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button type="button" class="card-action-btn delete-btn" title="Hapus Kegiatan" onclick="deleteTaskViaAjax({{ $task->id }})">
                                     <i class="ti ti-trash"></i>
                                 </button>
-                            </form>
+                            </div>
+                        </div>
+
+                        <div class="card-header-row">
+                            <h4 class="card-title">{{ $task->title }}</h4>
                         </div>
 
                         @if($task->description)

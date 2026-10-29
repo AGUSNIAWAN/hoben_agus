@@ -761,11 +761,6 @@
                     </div>
                 </div>
 
-                <!-- Footer Copyright -->
-                <div class="login-footer-copy">
-                    <p>© {{ date('Y') }} PT Eka Bogainti (HokBen) • OpsTrack Area 19</p>
-                </div>
-
             </div>
         </div>
     </div>
