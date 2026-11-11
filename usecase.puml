@@ -1,0 +1,108 @@
+@startuml
+!theme plain
+left to right direction
+skinparam shadowing false
+skinparam actorStyle awesome
+
+skinparam package {
+    BackgroundColor #FAFAFA
+    BorderColor #CBD5E1
+    FontColor #0F172A
+    FontSize 14
+}
+
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #0284C7
+    FontColor #0F172A
+    ArrowColor #475569
+    ArrowFontSize 11
+}
+
+skinparam actor {
+    BackgroundColor #FEF08A
+    BorderColor #CA8A04
+    FontColor #0F172A
+}
+
+' ==========================================
+' DEFINISI AKTOR
+' ==========================================
+actor "Staf Outlet\n(Kitchen / Counter / Cashier)" as Staff
+actor "Store Leader / Manager" as Leader
+actor "Google Sheets API" as GSheets <<System>>
+
+' Leader memiliki hak akses seperti Staff ditambah fungsi manajerial
+Leader --|> Staff
+
+' ==========================================
+' BOUNDARY SISTEM APLIKASI HOKBEN
+' ==========================================
+rectangle "Sistem Informasi Operasional Outlet HokBen" {
+
+    ' --- MODUL AUTENTIKASI ---
+    package "Autentikasi & Akun" {
+        usecase "Login ke Sistem" as UC_Login
+        usecase "Logout dari Sistem" as UC_Logout
+    }
+
+    ' --- MODUL DASHBOARD & MONITORING ---
+    package "Monitoring & Dashboard" {
+        usecase "Melihat Dashboard & KPI Outlet\n(Sales, Tren Kepatuhan, Shift)" as UC_Dashboard
+        usecase "Memfilter Periode, Divisi & Shift" as UC_FilterDashboard
+        usecase "Sinkronisasi Live Data Google Sheets\n(Area 19 Sales, Serah Terima, KFM)" as UC_SyncSheets
+    }
+
+    ' --- MODUL MANAJEMEN TUGAS (KANBAN) ---
+    package "Manajemen Tugas (Kanban Board)" {
+        usecase "Melihat Papan Kanban Tugas\n(To Do, In Progress, Done)" as UC_Kanban
+        usecase "Memperbarui Status Tugas (Drag & Drop)" as UC_UpdateTask
+        usecase "Membuat Tugas Operasional Baru" as UC_CreateTask
+        usecase "Menghapus Tugas" as UC_DeleteTask
+    }
+
+    ' --- MODUL OPERASIONAL & CHECKLIST STAF ---
+    package "Checklist & Pelaporan Staf" {
+        usecase "Mengisi Form Checklist Harian\n(Opening, Mid-shift, Closing)" as UC_Checklist
+        usecase "Mengunggah Laporan Berkas Excel" as UC_UploadExcel
+    }
+
+    ' --- MODUL VERIFIKASI DOKUMEN ---
+    package "Verifikasi & Validasi Dokumen" {
+        usecase "Memverifikasi / Menyetujui Laporan Excel" as UC_VerifyExcel
+        usecase "Mengunduh (Download) Berkas Excel" as UC_DownloadExcel
+    }
+
+    ' ==========================================
+    ' RELASI <<include>> & <<extend>>
+    ' ==========================================
+    UC_Dashboard ..> UC_Login : <<include>>
+    UC_Kanban ..> UC_Login : <<include>>
+    UC_Checklist ..> UC_Login : <<include>>
+    UC_UploadExcel ..> UC_Login : <<include>>
+    UC_VerifyExcel ..> UC_Login : <<include>>
+
+    UC_FilterDashboard ..> UC_Dashboard : <<extend>>
+    UC_DownloadExcel ..> UC_VerifyExcel : <<extend>>
+}
+
+' ==========================================
+' RELASI AKTOR DENGAN USE CASE
+' ==========================================
+Staff --> UC_Login
+Staff --> UC_Logout
+Staff --> UC_Dashboard
+Staff --> UC_Kanban
+Staff --> UC_UpdateTask
+Staff --> UC_Checklist
+Staff --> UC_UploadExcel
+
+Leader --> UC_CreateTask
+Leader --> UC_DeleteTask
+Leader --> UC_VerifyExcel
+Leader --> UC_SyncSheets
+
+UC_SyncSheets --> GSheets
+
+@enduml
+

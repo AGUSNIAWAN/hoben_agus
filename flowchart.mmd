@@ -1,0 +1,78 @@
+flowchart TD
+    Start(["Mulai"]) --> Login["Buka Halaman Login"]
+
+    %% SUBGRAPH 1: AUTENTIKASI
+    subgraph Auth ["1. Proses Autentikasi"]
+        Login --> InputCred["Masukkan Email & Password"]
+        InputCred --> CheckAuth{"Kredensial Valid?"}
+        CheckAuth -- "Tidak" --> ErrorMsg["Tampilkan Pesan Error Validasi"]
+        ErrorMsg --> Login
+    end
+
+    CheckAuth -- "Ya" --> CheckRole{"Identifikasi Peran (Role)"}
+
+    %% SUBGRAPH 2: ALUR KERJA STAF OUTLET
+    subgraph StaffFlow ["2. Alur Operasional Staf Outlet (Kitchen / Counter / Cashier / QC)"]
+        CheckRole -- "Staf Outlet" --> StaffDash["Dashboard Staf"]
+        StaffDash --> StaffMenu{"Pilih Aktivitas Staf"}
+
+        %% Opsi A: Checklist Harian
+        StaffMenu -- "Checklist Harian" --> DoChecklist["Pilih Divisi & Shift (Opening / Mid / Closing)"]
+        DoChecklist --> SaveChecklist["Centang Tugas & Simpan Checklist"]
+
+        %% Opsi B: Papan Kanban
+        StaffMenu -- "Kegiatan Kanban" --> ViewKanban["Buka Kanban Board"]
+        ViewKanban --> UpdateStatus["Update Status Tugas (To Do ke In Progress / Done)"]
+
+        %% Opsi C: Upload Excel
+        StaffMenu -- "Upload Laporan Excel" --> UploadExcel["Pilih Modul Form & Upload Berkas Excel"]
+        UploadExcel --> SubmitExcel["Status Laporan: Menunggu Verifikasi (Pending)"]
+    end
+
+    %% SUBGRAPH 3: ALUR KERJA STORE LEADER
+    subgraph LeaderFlow ["3. Alur Manajerial Store Leader / Manager"]
+        CheckRole -- "Store Leader" --> LeaderDash["Dashboard Utama Leader"]
+        LeaderDash --> LeaderMenu{"Pilih Aktivitas Manajerial"}
+
+        %% Opsi A: Monitoring & KPI
+        LeaderMenu -- "Monitoring & KPI" --> ViewAnalytics["Pantau Sales, Pencapaian Target & Tren Kepatuhan"]
+        ViewAnalytics --> FilterData["Filter Berdasarkan Periode, Divisi, atau Shift"]
+
+        %% Opsi B: Sinkronisasi Google Sheets
+        LeaderMenu -- "Sinkronisasi Live" --> SyncSheets["Sinkronisasi Google Sheets (Area 19 / Kasir / KFM)"]
+        SyncSheets --> UpdatedData["Database Diperbarui Secara Otomatis"]
+
+        %% Opsi C: Manajemen Kanban
+        LeaderMenu -- "Kelola Tugas" --> ManageKanban["Buat Tugas Operasional Baru, Tentukan PIC & Deadline"]
+
+        %% Opsi D: Verifikasi Dokumen
+        LeaderMenu -- "Verifikasi Berkas" --> ReviewSubmissions["Tinjau Daftar Pengajuan Laporan Staf"]
+        ReviewSubmissions --> DownloadFile["Unduh & Cek File Excel"]
+        DownloadFile --> ApproveAction["Verifikasi & Setujui Dokumen (Status: Verified)"]
+    end
+
+    %% KONSOLIDASI AKHIR
+    SaveChecklist --> EndAction["Aktivitas Staf Selesai"]
+    UpdateStatus --> EndAction
+    SubmitExcel --> EndAction
+
+    FilterData --> LeaderDone["Aktivitas Leader Selesai"]
+    UpdatedData --> LeaderDone
+    ManageKanban --> LeaderDone
+    ApproveAction --> LeaderDone
+
+    EndAction --> LogoutCheck{"Ingin Mengakhiri Sesi?"}
+    LeaderDone --> LogoutCheck
+
+    LogoutCheck -- "Tidak" --> CheckRole
+    LogoutCheck -- "Ya" --> DoLogout["Klik Logout & Bersihkan Sesi"]
+    DoLogout --> Finish(["Selesai"])
+
+    %% STYLING TAMPILAN
+    classDef startEnd fill:#FEF08A,stroke:#CA8A04,stroke-width:2px,color:#0F172A;
+    classDef decision fill:#FED7AA,stroke:#EA580C,stroke-width:2px,color:#0F172A;
+    classDef default fill:#F8FAFC,stroke:#64748B,stroke-width:1px,color:#0F172A;
+
+    class Start,Finish startEnd;
+    class CheckAuth,CheckRole,StaffMenu,LeaderMenu,LogoutCheck decision;
+
