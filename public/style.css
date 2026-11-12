@@ -1550,3 +1550,37 @@ body {
         flex-grow: 1;
     }
 }
+
+/* Analisa Penjualan Subtab Navigation */
+.analysis-subtab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.analysis-subtab-btn:hover {
+    color: var(--text-main);
+    background: var(--bg-subtle);
+}
+
+.analysis-subtab-btn.active {
+    background: rgba(217, 34, 42, 0.12);
+    color: var(--hokben-red);
+    border-color: rgba(217, 34, 42, 0.25);
+}
+
+[data-theme="dark"] .analysis-subtab-btn.active {
+    background: rgba(217, 34, 42, 0.2);
+    color: #ff6b72;
+    border-color: rgba(217, 34, 42, 0.4);
+}

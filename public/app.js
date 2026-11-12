@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const titles = {
         'dashboard': 'Dashboard Monitoring',
         'sales': 'Monitoring Sales',
+        'analisa-penjualan': 'ANALISA DATA PENJUALAN PER GROUP (RUKO PLAJU PALEMBANG)',
         'staff-portal': 'Portal Karyawan',
         'reports': 'Rekap & Laporan',
         'serah-terima': 'Serah Terima Sales & Modal Harian',
@@ -49,6 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => view.classList.add('active'), 10);
             }
         });
+
+        // Trigger init or resize jika membuka analisa penjualan
+        if (targetId === 'analisa-penjualan') {
+            if (typeof window.initSalesAnalysisPage === 'function') {
+                window.initSalesAnalysisPage();
+            }
+        }
 
         // Resize charts jika membuka dashboard
         if (targetId === 'dashboard') {

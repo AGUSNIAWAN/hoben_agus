@@ -54,6 +54,9 @@
                 <a href="#" class="nav-link" data-target="sales">
                     <i class="ti ti-chart-bar"></i> Monitoring Sales
                 </a>
+                <a href="#" class="nav-link" data-target="analisa-penjualan" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
+                    <i class="ti ti-chart-histogram" style="color: #D9222A;"></i> Analisa Penjualan Store (A20)
+                </a>
                 <a href="#" class="nav-link" data-target="staff-portal">
                     <i class="ti ti-users"></i> Portal Staff
                 </a>
@@ -188,6 +191,7 @@
             @include('dashboard.partials.staff-portal')
             @include('dashboard.partials.reports')
             @include('dashboard.partials.sales-monitoring')
+            @include('dashboard.partials.analisa-penjualan')
             @include('dashboard.partials.serah-terima')
             @include('dashboard.partials.preshift-monitoring')
             @include('dashboard.partials.kfm-helpdesk')
@@ -273,5 +277,6 @@
     <script src="{{ asset('app.js') }}"></script>
     <script src="{{ asset('js/sync-analysis.js') }}"></script>
     <script src="{{ asset('js/kanban.js') }}"></script>
+    <script src="{{ asset('js/analisa-penjualan.js') }}"></script>
 </body>
 </html>
