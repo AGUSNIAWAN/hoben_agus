@@ -18,7 +18,7 @@
         </div>
     @endif
 
-    @if($errors->any())
+    @if(isset($errors) && $errors->any())
         <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
             <i class="ti ti-alert-circle" style="font-size: 1.2rem;"></i>
             <span>{{ $errors->first() }}</span>
@@ -297,10 +297,16 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     @if($todaySubmissions->count() > 0)
     <div class="glass-panel" style="margin-top: 20px;">
-        <h3 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 800;">
-            <i class="ti ti-timeline" style="color: var(--hokben-yellow-dark);"></i>
-            Setbar Upload Hari Ini — {{ $todaySubmissions->count() }} Dokumen
-        </h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 800;">
+                <i class="ti ti-timeline" style="color: var(--hokben-yellow-dark);"></i>
+                Setbar &amp; Histori Upload Hari Ini — {{ $todaySubmissions->count() }} Dokumen
+            </h3>
+            <button type="button" onclick="document.querySelector('.nav-link[data-target=\'upload-history-view\']')?.click()"
+                    style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: #10b981; cursor: pointer;">
+                <i class="ti ti-history"></i> Buka Seluruh Riwayat Upload ({{ count($uploadHistory ?? []) }}) &rarr;
+            </button>
+        </div>
         <div style="display: flex; flex-direction: column; gap: 0;">
             @foreach($todaySubmissions as $sub)
             @php
@@ -327,14 +333,22 @@
                                 {{ $sub->user->name ?? 'Staff' }}
                                 <span style="font-weight: 500; color: var(--text-muted); font-size: 0.8rem;"> — {{ $sub->module->name ?? 'Form Excel' }}</span>
                             </p>
-                            <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">
-                                {{ $sub->created_at ? $sub->created_at->format('H:i') : '-' }} •
-                                {{ $sub->user->division ?? ($sub->module->category ?? 'Umum') }}
+                            <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                <span><i class="ti ti-clock"></i> {{ $sub->created_at ? $sub->created_at->format('H:i') : '-' }} ({{ $sub->created_at ? $sub->created_at->diffForHumans() : '-' }})</span>
+                                <span>&bull;</span>
+                                <span><i class="ti ti-file-spreadsheet"></i> {{ Str::limit($sub->original_name ?? basename($sub->file_path ?? 'Dokumen.xlsx'), 30) }}</span>
+                                <span>&bull;</span>
+                                <span>{{ $sub->formatted_file_size }}</span>
                             </p>
                         </div>
-                        <span style="font-size: 0.75rem; font-weight: 700; color: {{ $statusColor }}; background: {{ $statusColor }}15; border: 1px solid {{ $statusColor }}33; padding: 3px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;">
-                            {{ $sub->status }}
-                        </span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span style="font-size: 0.75rem; font-weight: 700; color: {{ $statusColor }}; background: {{ $statusColor }}15; border: 1px solid {{ $statusColor }}33; padding: 3px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;">
+                                {{ $sub->status }}
+                            </span>
+                            <a href="{{ route('submissions.download', $sub) }}" title="Unduh File" class="btn-outline" style="padding: 3px 8px; font-size: 0.75rem; border-radius: 6px; text-decoration: none;">
+                                <i class="ti ti-download"></i>
+                            </a>
+                        </div>
                     </div>
                     @if($subMetrics && isset($subMetrics['formatted_revenue']))
                     <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">

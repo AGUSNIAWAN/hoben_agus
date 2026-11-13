@@ -16,10 +16,21 @@ class ExcelSubmission extends Model
         'period',
         'submission_date',
         'file_path',
+        'original_name',
+        'file_size',
         'status',
         'notes',
         'analysis_data',
     ];
+
+    public function getFormattedFileSizeAttribute(): string
+    {
+        if (!$this->file_size) return '-';
+        if ($this->file_size >= 1048576) {
+            return number_format($this->file_size / 1048576, 2) . ' MB';
+        }
+        return number_format($this->file_size / 1024, 1) . ' KB';
+    }
 
     protected $casts = [
         'submission_date' => 'date',

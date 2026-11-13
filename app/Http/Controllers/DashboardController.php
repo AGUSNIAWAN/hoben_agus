@@ -31,6 +31,12 @@ class DashboardController extends Controller
         // Data Submission Hari Ini
         $todaySubmissions = ExcelSubmission::with(['user', 'module', 'outlet'])
             ->whereDate('submission_date', $today)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Seluruh Riwayat & Histori Upload File (Terbaru di atas)
+        $uploadHistory = ExcelSubmission::with(['user', 'module', 'outlet'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
         // Pengajuan yang Menunggu Review Leader
@@ -136,6 +142,7 @@ class DashboardController extends Controller
             'outlets' => $outlets,
             'modules' => $modules,
             'todaySubmissions' => $todaySubmissions,
+            'uploadHistory' => $uploadHistory,
             'pendingReviews' => $pendingReviews,
             'todayActivities' => $todayActivities,
             'userTodayActivities' => $userTodayActivities,

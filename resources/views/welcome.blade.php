@@ -63,6 +63,9 @@
                 <a href="#" class="nav-link" data-target="reports">
                     <i class="ti ti-report-analytics"></i> Rekap & Laporan
                 </a>
+                <a href="#" class="nav-link" data-target="upload-history-view" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
+                    <i class="ti ti-history" style="color: #10b981;"></i> Riwayat &amp; Histori Upload
+                </a>
                 <a href="#" class="nav-link" data-target="serah-terima">
                     <i class="ti ti-cash-banknote"></i> Serah Terima Sales & Modal Harian
                 </a>
@@ -185,6 +188,7 @@
             @include('dashboard.partials.metrics')
             @include('dashboard.partials.staff-portal')
             @include('dashboard.partials.reports')
+            @include('dashboard.partials.upload-history')
             @include('dashboard.partials.sales-monitoring')
             @include('dashboard.partials.analisa-penjualan')
             @include('dashboard.partials.serah-terima')

@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'analisa-penjualan': 'ANALISA DATA PENJUALAN PER GROUP (RUKO PLAJU PALEMBANG)',
         'staff-portal': 'Portal Karyawan',
         'reports': 'Rekap & Laporan',
+        'upload-history-view': 'Riwayat & Histori Upload File',
         'serah-terima': 'Serah Terima Sales & Modal Harian',
         'monitoring-preshift-area19': 'MONITORING PRE-SHIFT ONLINE AREA 19',
         'monitoring-kfm-helpdesk': 'MONITORING KFM DAN HELPDESK',

@@ -123,6 +123,13 @@
                                    border-radius:8px; color:#F59E0B; font-size:0.8rem; font-weight:700; cursor:pointer;">
                         <i class="ti ti-file-upload"></i> Upload Laporan Harian
                     </button>
+                    <button type="button"
+                            onclick="document.querySelector('.nav-link[data-target=\'upload-history-view\']')?.click()"
+                            style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px;
+                                   background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3);
+                                   border-radius:8px; color:#10b981; font-size:0.8rem; font-weight:700; cursor:pointer;">
+                        <i class="ti ti-history"></i> Histori Lengkap Dokumen ({{ count($uploadHistory ?? []) }})
+                    </button>
                 </div>
             </div>
             <div class="table-responsive">

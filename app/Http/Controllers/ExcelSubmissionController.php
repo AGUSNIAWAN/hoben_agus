@@ -34,7 +34,10 @@ class ExcelSubmissionController extends Controller
         $period   = Carbon::today()->format('Y-m');
 
         // Simpan file ke storage public
-        $storedPath = $request->file('file')->store('submissions', 'public');
+        $uploadedFile = $request->file('file');
+        $originalName = $uploadedFile->getClientOriginalName();
+        $fileSize     = $uploadedFile->getSize();
+        $storedPath   = $uploadedFile->store('submissions', 'public');
 
         // ── Auto-analisis isi berkas ──────────────────────────────────────────
         $analysisData = null;
@@ -50,22 +53,20 @@ class ExcelSubmissionController extends Controller
             \Log::warning('ExcelAnalysisService error: ' . $e->getMessage());
         }
 
-        // Buat atau perbarui submission untuk hari ini dan modul terkait
-        $submission = ExcelSubmission::updateOrCreate(
-            [
-                'outlet_id'       => $outletId,
-                'excel_module_id' => $validated['excel_module_id'],
-                'submission_date' => Carbon::today(),
-            ],
-            [
-                'user_id'       => $user->id,
-                'period'        => $period,
-                'file_path'     => $storedPath,
-                'status'        => 'Menunggu Review',
-                'notes'         => $validated['notes'] ?? 'Menunggu pengecekan kelengkapan dari Store Leader.',
-                'analysis_data' => $analysisData,
-            ]
-        );
+        // Catat sebagai entri histori upload baru (setiap upload file tercatat dalam riwayat)
+        $submission = ExcelSubmission::create([
+            'outlet_id'       => $outletId,
+            'excel_module_id' => $validated['excel_module_id'],
+            'submission_date' => Carbon::today(),
+            'user_id'         => $user->id,
+            'period'          => $period,
+            'file_path'       => $storedPath,
+            'original_name'   => $originalName,
+            'file_size'       => $fileSize,
+            'status'          => 'Menunggu Review',
+            'notes'           => $validated['notes'] ?? 'Menunggu pengecekan kelengkapan dari Store Leader.',
+            'analysis_data'   => $analysisData,
+        ]);
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
