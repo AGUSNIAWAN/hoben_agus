@@ -50,6 +50,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function outlet()
+    {
+        return $this->belongsTo(Outlet::class);
+    }
+
     public function tasks()
     {
         return $this->hasMany(Task::class);
@@ -58,5 +63,21 @@ class User extends Authenticatable
     public function dailyActivities()
     {
         return $this->hasMany(DailyActivity::class);
+    }
+
+    public function isLeader(): bool
+    {
+        $role = strtolower($this->role ?? 'staff');
+        return in_array($role, ['store leader', 'leader', 'admin', 'manager', 'area manager', 'spv']);
+    }
+
+    public function isStaff(): bool
+    {
+        return !$this->isLeader();
+    }
+
+    public function isAreaManager(): bool
+    {
+        return strtolower($this->role ?? '') === 'area manager';
     }
 }

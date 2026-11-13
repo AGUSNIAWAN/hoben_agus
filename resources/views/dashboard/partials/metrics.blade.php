@@ -12,7 +12,10 @@
                 <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0;">Monitoring checklist shift harian, kepatuhan SOP store, dan verifikasi dokumen leader secara real-time.</p>
             </div>
         </div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <a href="{{ route('reports.print') }}" target="_blank" class="btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: linear-gradient(135deg, #D9222A 0%, #b91c1c 100%); border-radius: 8px; font-size: 0.78rem; font-weight: 700; text-decoration: none; box-shadow: 0 4px 10px rgba(217,34,42,0.25); color: #fff;">
+                <i class="ti ti-printer"></i> Cetak PDF Laporan Resmi
+            </a>
             <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: #10b981;">
                 <span class="pulsing-dot-green"></span> Sistem Online
             </span>

@@ -84,12 +84,19 @@
             </nav>
 
             <div class="user-profile" style="position: relative;">
-                <div class="avatar">
+                <div class="avatar" style="background: {{ Auth::check() && Auth::user()->isLeader() ? 'linear-gradient(135deg, #D9222A, #FFC400)' : 'linear-gradient(135deg, #3b82f6, #06b6d4)' }};">
                     <i class="ti ti-user-circle"></i>
                 </div>
                 <div class="user-info" style="flex-grow: 1;">
                     <p class="name">{{ Auth::check() ? Auth::user()->name : 'Guest User' }}</p>
-                    <p class="role">{{ Auth::check() ? (Auth::user()->role ?? 'Store Leader') : 'Visitor' }}</p>
+                    <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                        <span class="badge" style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: {{ Auth::check() && Auth::user()->isLeader() ? 'rgba(217,34,42,0.2); color: #f87171; border: 1px solid rgba(217,34,42,0.4);' : 'rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.4);' }}">
+                            {{ Auth::check() ? (Auth::user()->role ?? 'Store Leader') : 'Visitor' }}
+                        </span>
+                        @if(Auth::check() && Auth::user()->division)
+                            <span style="font-size: 10px; color: var(--text-muted);">{{ Auth::user()->division }}</span>
+                        @endif
+                    </div>
                 </div>
                 @if(Auth::check())
                 <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
@@ -113,10 +120,23 @@
                     </button>
 
                     <div class="page-title">
-                        <div class="topbar-store-chip">
-                            <i class="ti ti-building-store"></i>
-                            <span>Hb Palembang Icon • Regional 5 Sumatera</span>
-                        </div>
+                        <form method="GET" action="{{ route('dashboard') }}" id="outletFilterForm" style="margin: 0; display: inline-block;">
+                            <input type="hidden" name="period" value="{{ $currentPeriod }}">
+                            <div class="topbar-store-chip" style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px;">
+                                <i class="ti ti-building-store" style="color: #FFC400; font-size: 1.05rem;"></i>
+                                <select name="outlet_id" onchange="document.getElementById('outletFilterForm').submit()" 
+                                        style="background: transparent; border: none; color: inherit; font-size: 12px; font-weight: 700; cursor: pointer; outline: none; font-family: inherit;">
+                                    <option value="all" {{ ($selectedOutletId ?? 'all') === 'all' ? 'selected' : '' }} style="background: #1e293b; color: #fff;">
+                                        Semua Gerai Area 19 Sumbagsel
+                                    </option>
+                                    @foreach($outlets as $ot)
+                                        <option value="{{ $ot->id }}" {{ ($selectedOutletId ?? '') == $ot->id ? 'selected' : '' }} style="background: #1e293b; color: #fff;">
+                                            {{ $ot->name }} ({{ $ot->code }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </form>
                         <h1 id="current-page-title">Dashboard Monitoring</h1>
                         <p class="date" id="current-date"></p>
                     </div>
@@ -136,45 +156,32 @@
                     <div class="notif-dropdown-wrapper">
                         <button class="icon-btn" id="notifBtn" aria-label="Notifications" onclick="toggleNotifications(event)">
                             <i class="ti ti-bell"></i>
-                            <span class="badge" id="notifBadge">3</span>
+                            <span class="badge" id="notifBadge">{{ count($notifications ?? []) }}</span>
                         </button>
 
                         <div class="notif-dropdown" id="notifDropdown">
                             <div class="notif-header">
-                                <h4><i class="ti ti-bell"></i> Pemberitahuan</h4>
+                                <h4><i class="ti ti-bell"></i> Pemberitahuan ({{ count($notifications ?? []) }})</h4>
                                 <button class="mark-read-btn" onclick="markAllNotificationsAsRead()">Tandai dibaca</button>
                             </div>
                             <ul class="notif-list">
-                                <li class="notif-item unread" onclick="handleNotifClick('serah-terima')">
-                                    <div class="notif-icon alert">
-                                        <i class="ti ti-cash-banknote"></i>
-                                    </div>
-                                    <div class="notif-content">
-                                        <p class="notif-title">Serah Terima Kasir Belum Lengkap</p>
-                                        <p class="notif-desc">Terdapat 3 sel kosong pada laporan Serah Terima Sales & Modal Harian.</p>
-                                        <span class="notif-time">15 menit yang lalu</span>
-                                    </div>
-                                </li>
-                                <li class="notif-item unread" onclick="handleNotifClick('monitoring-kfm-helpdesk')">
-                                    <div class="notif-icon warning">
-                                        <i class="ti ti-headset"></i>
-                                    </div>
-                                    <div class="notif-content">
-                                        <p class="notif-title">Tiket Helpdesk KFM Baru</p>
-                                        <p class="notif-desc">Status mesin fryer Hb Palembang Icon perlu penanganan teknisi.</p>
-                                        <span class="notif-time">1 jam yang lalu</span>
-                                    </div>
-                                </li>
-                                <li class="notif-item unread" onclick="handleNotifClick('monitoring-preshift-area19')">
-                                    <div class="notif-icon info">
-                                        <i class="ti ti-checklist"></i>
-                                    </div>
-                                    <div class="notif-content">
-                                        <p class="notif-title">Pre-Shift Checklist Update</p>
-                                        <p class="notif-desc">File Kesiapan Preshift Store Sumatera Oktober telah diperbarui.</p>
-                                        <span class="notif-time">3 jam yang lalu</span>
-                                    </div>
-                                </li>
+                                @forelse($notifications ?? [] as $n)
+                                    <li class="notif-item unread" onclick="handleNotifClick('{{ $n['target'] ?? 'dashboard' }}')">
+                                        <div class="notif-icon {{ $n['type'] ?? 'info' }}">
+                                            <i class="ti {{ $n['icon'] ?? 'ti-bell' }}"></i>
+                                        </div>
+                                        <div class="notif-content">
+                                            <p class="notif-title">{{ $n['title'] }}</p>
+                                            <p class="notif-desc">{{ $n['desc'] }}</p>
+                                            <span class="notif-time">{{ $n['time'] }}</span>
+                                        </div>
+                                    </li>
+                                @empty
+                                    <li class="notif-item" style="text-align: center; color: var(--text-muted); padding: 18px 12px;">
+                                        <i class="ti ti-circle-check" style="font-size: 24px; color: #10b981; display: block; margin-bottom: 6px;"></i>
+                                        Tidak ada notifikasi baru hari ini
+                                    </li>
+                                @endforelse
                             </ul>
                             <div class="notif-footer">
                                 <a href="#" onclick="markAllNotificationsAsRead(); return false;">Semua notifikasi telah ditampilkan</a>

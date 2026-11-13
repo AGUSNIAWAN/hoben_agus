@@ -85,6 +85,18 @@ class ExcelSubmissionController extends Controller
      */
     public function verify(Request $request, ExcelSubmission $submission)
     {
+        // Validasi Otorisasi RBAC: Hanya Store Leader yang berhak memverifikasi
+        $user = Auth::user();
+        if ($user && method_exists($user, 'isLeader') && !$user->isLeader()) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak: Hanya Store Leader / Manajer yang berhak memverifikasi dokumen.'
+                ], 403);
+            }
+            return redirect()->back()->with('error', 'Akses ditolak: Hanya Store Leader / Manajer yang berhak memverifikasi dokumen.');
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:Lengkap,Perlu Perbaikan',
             'notes'  => 'nullable|string|max:500',

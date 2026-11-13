@@ -26,6 +26,9 @@
         <div class="filter-actions">
             <button type="submit" class="btn-primary"><i class="ti ti-filter"></i> Terapkan</button>
             <button type="button" class="btn-export" onclick="exportReportsTableToExcel()"><i class="ti ti-file-export"></i> Export Excel</button>
+            <a href="{{ route('reports.print') }}" target="_blank" class="btn-primary" style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #D9222A 0%, #b91c1c 100%); text-decoration:none; padding:8px 14px; font-size:0.84rem; font-weight:700; border-radius:8px;">
+                <i class="ti ti-printer"></i> Cetak Laporan PDF
+            </a>
             <button type="button"
                     onclick="toggleUploadPanel('upload-reports')"
                     style="display:inline-flex; align-items:center; gap:6px; padding:8px 14px;

@@ -228,6 +228,7 @@
                 <button type="button" class="btn-outline" onclick="closeVerifyModal()" style="padding: 8px 16px; font-size: 0.82rem;">
                     Tutup
                 </button>
+                @if(Auth::check() && Auth::user()->isLeader())
                 <div style="display: flex; gap: 8px;">
                     <button type="button" class="btn-danger" onclick="submitVerification('Perlu Perbaikan')"
                             style="padding: 9px 16px; display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; border-radius: 8px;">
@@ -238,6 +239,12 @@
                         <i class="ti ti-check"></i> Approve Lengkap
                     </button>
                 </div>
+                @else
+                <div style="display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 8px 14px; border-radius: 8px; border: 1px dashed var(--border-color);">
+                    <i class="ti ti-shield-lock" style="color: var(--hokben-yellow-dark); font-size: 1.1rem;"></i>
+                    <span>Verifikasi &amp; persetujuan dokumen khusus akun <strong>Store Leader</strong></span>
+                </div>
+                @endif
             </div>
         </form>
     </div>

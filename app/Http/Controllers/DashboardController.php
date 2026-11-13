@@ -16,6 +16,15 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        // Pilihan Gerai (Multi-Store Filter Area 19)
+        $selectedOutletId = $request->input('outlet_id', session('selected_outlet_id', 'all'));
+        session(['selected_outlet_id' => $selectedOutletId]);
+
+        $selectedOutlet = null;
+        if ($selectedOutletId !== 'all') {
+            $selectedOutlet = Outlet::find($selectedOutletId);
+        }
+
         // Default periode bulan (YYYY-MM)
         $period = $request->input('period', now()->format('Y-m'));
         $today = Carbon::today();
@@ -28,16 +37,20 @@ class DashboardController extends Controller
         // Modul Form Excel yang aktif
         $modules = ExcelModule::where('is_active', true)->get();
 
-        // Data Submission Hari Ini
-        $todaySubmissions = ExcelSubmission::with(['user', 'module', 'outlet'])
-            ->whereDate('submission_date', $today)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Data Submission Hari Ini (dengan filter gerai bila dipilih)
+        $subsQuery = ExcelSubmission::with(['user', 'module', 'outlet'])
+            ->whereDate('submission_date', $today);
+        if ($selectedOutletId !== 'all') {
+            $subsQuery->where('outlet_id', $selectedOutletId);
+        }
+        $todaySubmissions = $subsQuery->orderBy('created_at', 'desc')->get();
 
         // Seluruh Riwayat & Histori Upload File (Terbaru di atas)
-        $uploadHistory = ExcelSubmission::with(['user', 'module', 'outlet'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $uploadHistQuery = ExcelSubmission::with(['user', 'module', 'outlet']);
+        if ($selectedOutletId !== 'all') {
+            $uploadHistQuery->where('outlet_id', $selectedOutletId);
+        }
+        $uploadHistory = $uploadHistQuery->orderBy('created_at', 'desc')->get();
 
         // Pengajuan yang Menunggu Review Leader
         $pendingReviews = ExcelSubmission::with(['user', 'module', 'outlet'])
@@ -46,9 +59,12 @@ class DashboardController extends Controller
             ->get();
 
         // Aktivitas Checklist Hari Ini
-        $todayActivities = DailyActivity::with(['user', 'outlet'])
-            ->whereDate('date', $today)
-            ->get();
+        $actsQuery = DailyActivity::with(['user', 'outlet'])
+            ->whereDate('date', $today);
+        if ($selectedOutletId !== 'all') {
+            $actsQuery->where('outlet_id', $selectedOutletId);
+        }
+        $todayActivities = $actsQuery->get();
 
         // Perhitungan KPI Dinamis
         $totalModulesCount = max($modules->count(), 4);
@@ -61,6 +77,51 @@ class DashboardController extends Controller
         // Outlet/divisi yang belum closing hari ini
         $closingSubmittedCount = $todayActivities->where('shift', 'Closing')->count();
         $outletsNotClosing = max(0, 2 - $closingSubmittedCount);
+
+        // Notifikasi Dinamis (Live Real-Time Notifications)
+        $notifications = [];
+        if ($pendingReviews->count() > 0) {
+            $notifications[] = [
+                'type' => 'alert',
+                'icon' => 'ti-file-import',
+                'title' => 'Verifikasi Dokumen Tertunda',
+                'desc' => "{$pendingReviews->count()} form Excel menunggu review dan persetujuan Store Leader.",
+                'time' => 'Hari ini',
+                'target' => 'dashboard',
+            ];
+        }
+
+        foreach ($uploadHistory->take(3) as $subHist) {
+            $fName = $subHist->original_name ?? $subHist->module->name ?? 'Berkas Excel';
+            $notifications[] = [
+                'type' => $subHist->status === 'Lengkap' ? 'info' : ($subHist->status === 'Perlu Perbaikan' ? 'warning' : 'alert'),
+                'icon' => 'ti-file-spreadsheet',
+                'title' => 'Dokumen ' . \Illuminate\Support\Str::limit($fName, 26),
+                'desc' => ($subHist->user->name ?? 'Staff') . " mengunggah berkas status: {$subHist->status}.",
+                'time' => $subHist->created_at ? $subHist->created_at->diffForHumans() : 'Baru saja',
+                'target' => 'upload-history-view',
+            ];
+        }
+
+        if ($outletsNotClosing > 0) {
+            $notifications[] = [
+                'type' => 'warning',
+                'icon' => 'ti-clock',
+                'title' => 'Shift Closing Berjalan',
+                'desc' => 'Pastikan checklist SOP closing disimpan sebelum operasional gerai berakhir.',
+                'time' => 'Shift aktif',
+                'target' => 'staff-portal',
+            ];
+        } else {
+            $notifications[] = [
+                'type' => 'info',
+                'icon' => 'ti-circle-check',
+                'title' => 'Checklist SOP Lengkap',
+                'desc' => 'Seluruh checklist shift kerja harian gerai telah tersimpan lengkap.',
+                'time' => 'Hari ini',
+                'target' => 'staff-portal',
+            ];
+        }
 
         // Rekap Data untuk Halaman Reports
         $reportDate = $request->input('report_date', $today->toDateString());
@@ -140,6 +201,9 @@ class DashboardController extends Controller
             'tasks' => $tasks,
             'users' => $users,
             'outlets' => $outlets,
+            'selectedOutletId' => $selectedOutletId,
+            'selectedOutlet' => $selectedOutlet,
+            'notifications' => $notifications,
             'modules' => $modules,
             'todaySubmissions' => $todaySubmissions,
             'uploadHistory' => $uploadHistory,
@@ -163,6 +227,36 @@ class DashboardController extends Controller
                 'pendingCount' => $pendingReviews->count(),
                 'notClosingCount' => $outletsNotClosing,
             ],
+        ]);
+    }
+
+    public function printDailyReport(Request $request)
+    {
+        $selectedOutletId = $request->input('outlet_id', session('selected_outlet_id', 'all'));
+        $selectedOutlet = null;
+        if ($selectedOutletId !== 'all') {
+            $selectedOutlet = Outlet::find($selectedOutletId);
+        }
+
+        $today = Carbon::today();
+        $subsQuery = ExcelSubmission::with(['user', 'module', 'outlet'])
+            ->whereDate('submission_date', $today);
+        if ($selectedOutletId !== 'all') {
+            $subsQuery->where('outlet_id', $selectedOutletId);
+        }
+        $todaySubmissions = $subsQuery->orderBy('created_at', 'desc')->get();
+
+        $modules = ExcelModule::where('is_active', true)->get();
+        $totalModulesCount = max($modules->count(), 4);
+        $approvedCount = $todaySubmissions->where('status', 'Lengkap')->count();
+        $compliancePercent = min(100, round(($approvedCount / $totalModulesCount) * 100));
+
+        return view('reports.print-daily', [
+            'selectedOutlet' => $selectedOutlet,
+            'selectedOutletId' => $selectedOutletId,
+            'todaySubmissions' => $todaySubmissions,
+            'compliancePercent' => $compliancePercent,
+            'approvedCount' => $approvedCount,
         ]);
     }
 }

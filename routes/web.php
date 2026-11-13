@@ -38,4 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/submissions/{submission}/download', [ExcelSubmissionController::class, 'download'])->name('submissions.download');
     Route::get('/submissions/{submission}/download-analysis', [ExcelSubmissionController::class, 'downloadAnalysis'])->name('submissions.download_analysis');
     Route::get('/submissions/{submission}/analysis-json', [ExcelSubmissionController::class, 'getAnalysisJson'])->name('submissions.analysis_json');
+
+    // Cetak / Export PDF Laporan Resmi 1 Lembar
+    Route::get('/reports/print-daily', [DashboardController::class, 'printDailyReport'])->name('reports.print');
 });
