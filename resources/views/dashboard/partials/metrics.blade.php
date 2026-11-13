@@ -113,9 +113,16 @@
         <div class="glass-panel main-panel">
             <div class="panel-header">
                 <h2>Status Upload Hari Ini</h2>
-                <div class="status-filters">
+                <div class="status-filters" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <button class="filter-btn active" onclick="filterStatusTable('all', this)">Semua</button>
                     <button class="filter-btn" onclick="filterStatusTable('review', this)">Menunggu Review</button>
+                    <button type="button"
+                            onclick="toggleUploadPanel('upload-dashboard')"
+                            style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px;
+                                   background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3);
+                                   border-radius:8px; color:#F59E0B; font-size:0.8rem; font-weight:700; cursor:pointer;">
+                        <i class="ti ti-file-upload"></i> Upload Laporan Harian
+                    </button>
                 </div>
             </div>
             <div class="table-responsive">
@@ -208,4 +215,15 @@
             </div>
         </div>
     </div>
+
+    {{-- Upload Panel Dashboard --}}
+    @include('dashboard.partials.upload-panel', [
+        'panelId'   => 'upload-dashboard',
+        'title'     => 'Upload Laporan Operasional Harian',
+        'subtitle'  => 'Unggah file Excel laporan harian untuk diverifikasi Leader.',
+        'icon'      => 'ti-layout-dashboard',
+        'iconColor' => '#F59E0B',
+        'moduleId'  => $modules->first()?->id ?? 1,
+        'noteText'  => 'Laporan operasional harian Dashboard Leader',
+    ])
 </section>

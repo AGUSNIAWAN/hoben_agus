@@ -1,4 +1,4 @@
-﻿{{-- ============================================================ --}}
+{{-- ============================================================ --}}
 {{-- PROMO SEPTEMBER - Section Bar Baru                           --}}
 {{-- Data: PROMO SEP.xls (Area 19 SUMBAGSEL)                     --}}
 {{-- ============================================================ --}}
@@ -28,8 +28,26 @@
             <span style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; background:var(--panel-bg); border:1px solid var(--border-color); border-radius:10px; font-size:0.8rem; font-weight:700; color:var(--text-body);">
                 <i class="ti ti-building-store" style="color:var(--hokben-yellow-dark);"></i> 5 Outlet Aktif
             </span>
+            <button type="button"
+                    onclick="toggleUploadPanel('upload-promo')"
+                    style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px;
+                           background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3);
+                           border-radius:10px; font-size:0.8rem; font-weight:700; color:#F59E0B; cursor:pointer;">
+                <i class="ti ti-upload"></i> Upload Data Promo
+            </button>
         </div>
     </div>
+
+    {{-- Upload Panel Promo September --}}
+    @include('dashboard.partials.upload-panel', [
+        'panelId'   => 'upload-promo',
+        'title'     => 'Upload Data Promo September',
+        'subtitle'  => 'Upload file PROMO SEP.xlsx untuk memperbarui data rekap promo Area 19.',
+        'icon'      => 'ti-rosette-discount',
+        'iconColor' => '#F59E0B',
+        'moduleId'  => $modules->first()?->id ?? 1,
+        'noteText'  => 'Data rekap promo September 2026 Area 19 Sumbagsel',
+    ])
 
     {{-- ===== KPI SUMMARY CARDS ===== --}}
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px;">
@@ -114,34 +132,100 @@
             </div>
         </div>
 
-        <div class="glass-panel" style="padding:22px 24px;">
-            <div style="margin-bottom:16px;">
+        <div class="glass-panel" style="padding:22px 24px; overflow-y: auto; max-height: 480px;">
+            <div style="margin-bottom:14px;">
                 <h3 style="margin:0; font-size:1rem; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:8px;">
                     <i class="ti ti-chart-donut" style="color:#8B5CF6; font-size:1.2rem;"></i>
-                    Komposisi Promo per Kategori
+                    Kontribusi Omzet per Grup Menu
                 </h3>
-                <p style="margin:4px 0 0 0; font-size:0.78rem; color:var(--text-muted);">Seksi 010 &middot; 012 &middot; 013 berdasarkan Qty terjual</p>
+                <p style="margin:4px 0 0 0; font-size:0.78rem; color:var(--text-muted);">Detail nama item, qty &amp; kontribusi omzet per seksi</p>
             </div>
-            <div style="position:relative; height:220px; width:100%;">
-                <canvas id="promoCategoryChart"></canvas>
+
+            @php
+            // Data kontribusi omzet per item (dari promoData di bawah)
+            $omzetGroups = [
+                ['sec'=>'013','label'=>'Paket Khusus','color'=>'#8B5CF6','items'=>[
+                    ['nama'=>'Hoka Hemat 1 WIL','qty'=>319,'rp'=>8431408],
+                    ['nama'=>'LO Hemat 20-2','qty'=>9,'rp'=>4745457],
+                    ['nama'=>'Hoka FYP Ber-4','qty'=>31,'rp'=>4368210],
+                    ['nama'=>'Ekkado WIL','qty'=>69,'rp'=>2607976],
+                    ['nama'=>'2HH+2SST+4Ocha+2','qty'=>18,'rp'=>2274552],
+                    ['nama'=>'Hoka Murmer 2 (C)','qty'=>104,'rp'=>1890928],
+                    ['nama'=>'Ramen FYP Berempat','qty'=>10,'rp'=>1318190],
+                    ['nama'=>'Bundling D.Maxi Ber-3','qty'=>9,'rp'=>1201005],
+                    ['nama'=>'Tori Boneless Duo Set','qty'=>16,'rp'=>807280],
+                    ['nama'=>'Hoka FYP Ber-2','qty'=>10,'rp'=>772730],
+                    ['nama'=>'Promo CT','qty'=>60,'rp'=>1301100],
+                    ['nama'=>'Promo ECR GoFood','qty'=>35,'rp'=>758975],
+                    ['nama'=>'Promo Shrimp Roll GF','qty'=>25,'rp'=>542125],
+                    ['nama'=>'Chicken Tofu 1PCS','qty'=>23,'rp'=>292944],
+                    ['nama'=>'S.Bowl Tori Soboro','qty'=>21,'rp'=>420357],
+                    ['nama'=>'Super Bowl B.Teriyaki','qty'=>8,'rp'=>292764],
+                ]],
+                ['sec'=>'012','label'=>'Paket Promosi','color'=>'#D9222A','items'=>[
+                    ['nama'=>'Kidzu Bento Milo 1','qty'=>49,'rp'=>2319371],
+                    ['nama'=>'Kidzu Bento Milo 3','qty'=>42,'rp'=>1988193],
+                    ['nama'=>'Kidzu Bento Milo 2','qty'=>29,'rp'=>1374445],
+                    ['nama'=>'Paket HFC 1PC (DD/PA)','qty'=>24,'rp'=>938504],
+                    ['nama'=>'Kidzu Bento Milo 4','qty'=>11,'rp'=>520823],
+                    ['nama'=>'Paket HFC 1PC (SYP)','qty'=>9,'rp'=>352146],
+                    ['nama'=>'Paket HFC 2 PCS','qty'=>6,'rp'=>312886],
+                    ['nama'=>'Free Chicken Katsu','qty'=>3,'rp'=>0],
+                ]],
+                ['sec'=>'010','label'=>'Promosi / Free','color'=>'#F59E0B','items'=>[
+                    ['nama'=>'Free Cold Ocha','qty'=>210,'rp'=>0],
+                    ['nama'=>'Free TA Bag Ala Carte','qty'=>82,'rp'=>0],
+                    ['nama'=>'Kidzu HokBen Bricks','qty'=>34,'rp'=>0],
+                    ['nama'=>'TA Bag Ala Carte','qty'=>11,'rp'=>25003],
+                    ['nama'=>'Kartu Bermain Patriot','qty'=>2,'rp'=>0],
+                    ['nama'=>'Merchandise Promo','qty'=>3,'rp'=>0],
+                    ['nama'=>'Hadiah Khusus','qty'=>1,'rp'=>0],
+                ]],
+            ];
+            $grandOmzet = 0;
+            foreach($omzetGroups as $g) foreach($g['items'] as $it) $grandOmzet += $it['rp'];
+            @endphp
+
+            @foreach($omzetGroups as $grp)
+            @php
+                $grpTotal = array_sum(array_column($grp['items'], 'rp'));
+                $grpQty   = array_sum(array_column($grp['items'], 'qty'));
+                $grpPct   = $grandOmzet > 0 ? round($grpTotal / $grandOmzet * 100, 1) : 0;
+            @endphp
+            <div style="margin-bottom:14px;">
+                <!-- Group header -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                        <span style="width:10px; height:10px; border-radius:3px; background:{{ $grp['color'] }}; flex-shrink:0;"></span>
+                        <span style="font-weight:800; font-size:0.84rem; color:{{ $grp['color'] }};">{{ $grp['label'] }} ({{ $grp['sec'] }})</span>
+                    </div>
+                    <span style="font-size:0.76rem; font-weight:700; color:{{ $grp['color'] }};">{{ $grpPct }}% &bull; Rp {{ number_format($grpTotal/1000000, 1) }} Jt</span>
+                </div>
+                <!-- Group progress bar -->
+                <div style="height:5px; background:var(--border-color); border-radius:9999px; overflow:hidden; margin-bottom:8px;">
+                    <div style="height:100%; width:{{ $grpPct }}%; background:{{ $grp['color'] }}; border-radius:9999px;"></div>
+                </div>
+                <!-- Items detail -->
+                @foreach($grp['items'] as $it)
+                @php
+                    $itPct = $grpTotal > 0 ? round($it['rp'] / $grpTotal * 100, 1) : 0;
+                    $itBar = $grpTotal > 0 && $it['rp'] > 0 ? round($it['rp'] / $grpTotal * 100) : 0;
+                @endphp
+                <div style="display:flex; align-items:center; gap:8px; padding:4px 8px; border-radius:6px; margin-bottom:2px; background:{{ $grp['color'] }}08;">
+                    <div style="width: 60px; height: 3px; background: {{ $grp['color'] }}30; border-radius: 9999px; flex-shrink: 0; overflow:hidden;">
+                        <div style="height:100%; width:{{ $itBar }}%; background:{{ $grp['color'] }};"></div>
+                    </div>
+                    <span style="flex:1; font-size:0.76rem; color:var(--text-body); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $it['nama'] }}</span>
+                    <span style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap;">{{ number_format($it['qty'], 0, ',', '.') }}×</span>
+                    @if($it['rp'] > 0)
+                    <span style="font-size:0.72rem; color:{{ $grp['color'] }}; font-weight:700; white-space:nowrap;">Rp {{ number_format($it['rp']/1000, 0, ',', '.') }}K</span>
+                    @else
+                    <span style="font-size:0.68rem; color:#10b981; font-weight:700; background:rgba(16,185,129,0.1); padding:1px 6px; border-radius:9999px;">FREE</span>
+                    @endif
+                </div>
+                @endforeach
             </div>
-            <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
-                <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#F59E0B; flex-shrink:0;"></span>
-                    <span style="color:var(--text-body); font-weight:600;">Promosi (010)</span>
-                    <span style="margin-left:auto; color:var(--text-muted);">343 unit</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#D9222A; flex-shrink:0;"></span>
-                    <span style="color:var(--text-body); font-weight:600;">Paket Promosi (012)</span>
-                    <span style="margin-left:auto; color:var(--text-muted);">173 unit</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem;">
-                    <span style="width:12px; height:12px; border-radius:3px; background:#8B5CF6; flex-shrink:0;"></span>
-                    <span style="color:var(--text-body); font-weight:600;">Paket Khusus (013)</span>
-                    <span style="margin-left:auto; color:var(--text-muted);">766 unit</span>
-                </div>
-            </div>
+            @endforeach
         </div>
 
     </div>

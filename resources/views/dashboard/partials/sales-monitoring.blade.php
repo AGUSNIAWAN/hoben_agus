@@ -1,16 +1,36 @@
 <!-- Sales Monitoring View -->
 <section id="view-sales" class="view-section hidden">
-    <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
             <h2>AKTUAL SALES HARIAN STORE (Tracking Data Kosong)</h2>
             <p class="sub-text m-0">Upload file Excel dari SharePoint untuk melihat kolom yang belum diisi.</p>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
             <select id="sheetSelector" class="styled-select" style="display: none; min-width: 200px; padding: 8px;" onchange="renderSelectedSheet()"></select>
             <input type="file" id="localExcelFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelUpload(event)">
-            <button class="btn-success" onclick="document.getElementById('localExcelFile').click()"><i class="ti ti-upload"></i> Upload & Cek File Excel</button>
+            <button class="btn-success" onclick="document.getElementById('localExcelFile').click()">
+                <i class="ti ti-table-import"></i> Buka & Analisa File Excel
+            </button>
+            <button type="button"
+                    onclick="toggleUploadPanel('upload-sales')"
+                    style="display:inline-flex; align-items:center; gap:6px; padding:8px 14px;
+                           background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3);
+                           border-radius:8px; color:#10b981; font-size:0.84rem; font-weight:700; cursor:pointer;">
+                <i class="ti ti-upload"></i> Simpan ke Server
+            </button>
         </div>
     </div>
+
+    {{-- Upload Panel Sales --}}
+    @include('dashboard.partials.upload-panel', [
+        'panelId'   => 'upload-sales',
+        'title'     => 'Upload Data Aktual Sales Harian',
+        'subtitle'  => 'Simpan file Excel aktual sales ke server untuk arsip & verifikasi Leader.',
+        'icon'      => 'ti-chart-bar',
+        'iconColor' => '#10b981',
+        'moduleId'  => $modules->where('category', 'Sales')->first()?->id ?? ($modules->first()?->id ?? 1),
+        'noteText'  => 'Data aktual sales harian monitoring',
+    ])
 
     <div class="glass-panel mb-5" style="padding: 0; overflow: hidden;">
         <div class="excel-container" style="max-height: 500px; overflow-y: auto;">

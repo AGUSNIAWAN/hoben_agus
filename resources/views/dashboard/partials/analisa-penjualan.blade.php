@@ -55,12 +55,25 @@
                 <span>Export CSV</span>
             </button>
 
-            <button type="button" class="btn-primary" onclick="switchToAnalysisTab('custom-upload')" style="padding: 8px 14px; font-size: 0.82rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px;">
+            <button type="button"
+                    onclick="toggleUploadPanel('upload-analisa')"
+                    style="padding: 8px 14px; font-size: 0.82rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; background: rgba(217,34,42,0.15); border: 1px solid rgba(217,34,42,0.35); color: var(--hokben-red); cursor: pointer;">
                 <i class="ti ti-upload"></i>
                 <span>Upload Laporan Baru</span>
             </button>
         </div>
     </div>
+
+    {{-- Upload Panel Analisa Penjualan --}}
+    @include('dashboard.partials.upload-panel', [
+        'panelId'   => 'upload-analisa',
+        'title'     => 'Upload Laporan Penjualan Per Group',
+        'subtitle'  => 'Upload file XLSX Laporan Penjualan POS untuk dianalisis otomatis (data bulan/multi-sheet).',
+        'icon'      => 'ti-chart-histogram',
+        'iconColor' => '#D9222A',
+        'moduleId'  => $modules->first()?->id ?? 1,
+        'noteText'  => 'Laporan Penjualan Per Group Store A20 Ruko Plaju',
+    ])
 
     {{-- ===== 2. EXECUTIVE KPI STAT CARDS ===== --}}
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 16px; margin-bottom: 24px;">

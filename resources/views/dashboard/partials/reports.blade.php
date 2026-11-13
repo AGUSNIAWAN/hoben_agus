@@ -26,8 +26,26 @@
         <div class="filter-actions">
             <button type="submit" class="btn-primary"><i class="ti ti-filter"></i> Terapkan</button>
             <button type="button" class="btn-export" onclick="exportReportsTableToExcel()"><i class="ti ti-file-export"></i> Export Excel</button>
+            <button type="button"
+                    onclick="toggleUploadPanel('upload-reports')"
+                    style="display:inline-flex; align-items:center; gap:6px; padding:8px 14px;
+                           background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3);
+                           border-radius:8px; color:#818cf8; font-size:0.84rem; font-weight:700; cursor:pointer;">
+                <i class="ti ti-upload"></i> Upload Laporan
+            </button>
         </div>
     </form>
+
+    {{-- Upload Panel Rekap & Laporan --}}
+    @include('dashboard.partials.upload-panel', [
+        'panelId'   => 'upload-reports',
+        'title'     => 'Upload Rekap & Laporan',
+        'subtitle'  => 'Upload file rekap harian/bulanan untuk disimpan ke arsip server.',
+        'icon'      => 'ti-report-analytics',
+        'iconColor' => '#818cf8',
+        'moduleId'  => $modules->first()?->id ?? 1,
+        'noteText'  => 'Rekap laporan operasional',
+    ])
 
     <div class="glass-panel">
         <div class="table-responsive">

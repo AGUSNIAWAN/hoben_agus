@@ -1,11 +1,31 @@
 <!-- MONITORING KFM DAN HELPDESK View -->
 <section id="view-monitoring-kfm-helpdesk" class="view-section hidden">
-    <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
-        <h2>MONITORING KFM DAN HELPDESK</h2>
-        <p class="sub-text m-0">Monitoring data perbaikan KFM & Tiket Helpdesk Maintenance.</p>
+    <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+            <h2>MONITORING KFM DAN HELPDESK</h2>
+            <p class="sub-text m-0">Monitoring data perbaikan KFM & Tiket Helpdesk Maintenance.</p>
+        </div>
+        <button type="button"
+                onclick="toggleUploadPanel('upload-kfm')"
+                style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px;
+                       background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3);
+                       border-radius:8px; color:#f87171; font-size:0.84rem; font-weight:700; cursor:pointer;">
+            <i class="ti ti-tool"></i> Upload Laporan KFM / Helpdesk
+        </button>
     </div>
 
-    <div class="glass-panel" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 75vh;">
+    {{-- Upload Panel KFM Helpdesk --}}
+    @include('dashboard.partials.upload-panel', [
+        'panelId'   => 'upload-kfm',
+        'title'     => 'Upload Laporan KFM & Tiket Helpdesk',
+        'subtitle'  => 'Upload file data perbaikan mesin, checklist KFM, atau tiket helpdesk (.xlsx/.csv).',
+        'icon'      => 'ti-headset',
+        'iconColor' => '#f87171',
+        'moduleId'  => $modules->first()?->id ?? 1,
+        'noteText'  => 'Laporan monitoring KFM dan helpdesk',
+    ])
+
+    <div class="glass-panel" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 75vh; margin-top: 16px;">
         <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
                 <i class="ti ti-headset"></i> Monitoring KFM dan Helpdesk

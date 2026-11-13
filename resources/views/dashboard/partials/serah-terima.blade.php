@@ -1,9 +1,29 @@
 <!-- Serah Terima Sales & Modal Harian View -->
 <section id="view-serah-terima" class="view-section hidden">
-    <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
-        <h2>SERAH TERIMA SALES DAN MODAL HARIAN</h2>
-        <p class="sub-text m-0">Form pencatatan serah terima sales dan modal kasir harian.</p>
+    <div class="panel-header mb-4" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+            <h2>SERAH TERIMA SALES DAN MODAL HARIAN</h2>
+            <p class="sub-text m-0">Form pencatatan serah terima sales dan modal kasir harian.</p>
+        </div>
+        <button type="button"
+                onclick="toggleUploadPanel('upload-serah-terima')"
+                style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px;
+                       background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3);
+                       border-radius:8px; color:#10b981; font-size:0.84rem; font-weight:700; cursor:pointer;">
+            <i class="ti ti-cash-banknote"></i> Upload Bukti Serah Terima
+        </button>
     </div>
+
+    {{-- Upload Panel Serah Terima --}}
+    @include('dashboard.partials.upload-panel', [
+        'panelId'   => 'upload-serah-terima',
+        'title'     => 'Upload Bukti Serah Terima Sales & Modal',
+        'subtitle'  => 'Upload form serah terima kasir harian (.xlsx/.csv) untuk disimpan & diverifikasi Leader.',
+        'icon'      => 'ti-cash-banknote',
+        'iconColor' => '#10b981',
+        'moduleId'  => $modules->first()?->id ?? 1,
+        'noteText'  => 'Form serah terima sales dan modal harian',
+    ])
     
     <!-- Tabs -->
     <div class="tabs-container mb-4" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">

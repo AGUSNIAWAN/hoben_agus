@@ -124,11 +124,6 @@
                         <input type="month" name="period" value="{{ $currentPeriod }}" class="styled-input period-selector" style="padding: 8px 14px; height: 42px; border-radius: 10px;" onchange="document.getElementById('periodForm').submit()">
                     </form>
                     
-                    <button type="button" class="btn-quick-action" onclick="document.querySelector('[data-target=\'staff-portal\']').click()" title="Buka Portal Staff">
-                        <i class="ti ti-file-upload"></i>
-                        <span>Upload Form</span>
-                    </button>
-
                     <!-- Theme Toggle (Light / Dark) -->
                     <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Theme" onclick="toggleDashboardTheme()" title="Ganti Tema (Terang/Gelap)">
                         <i class="ti ti-moon" id="themeIcon"></i>
@@ -275,6 +270,7 @@
 
     <!-- Application Core & Feature Modules -->
     <script src="{{ asset('app.js') }}"></script>
+    <script src="{{ asset('js/upload-panel.js') }}"></script>
     <script src="{{ asset('js/sync-analysis.js') }}"></script>
     <script src="{{ asset('js/kanban.js') }}"></script>
     <script src="{{ asset('js/analisa-penjualan.js') }}"></script>

@@ -32,6 +32,13 @@
             <button class="btn-primary" onclick="openTaskModal()" style="display: flex; align-items: center; gap: 8px; padding: 9px 18px; font-weight: 600; border-radius: 8px;">
                 <i class="ti ti-plus"></i> Tambah Kegiatan
             </button>
+            <button type="button"
+                    onclick="toggleUploadPanel('upload-kanban')"
+                    style="display:inline-flex; align-items:center; gap:7px; padding:9px 16px;
+                           background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3);
+                           border-radius:8px; color:#F59E0B; font-size:0.84rem; font-weight:700; cursor:pointer;">
+                <i class="ti ti-paperclip"></i> Lampirkan Dokumen
+            </button>
         </div>
     </div>
 
@@ -41,6 +48,17 @@
             <span>{{ session('success') }}</span>
         </div>
     @endif
+
+    {{-- Upload Panel Kanban --}}
+    @include('dashboard.partials.upload-panel', [
+        'panelId'   => 'upload-kanban',
+        'title'     => 'Lampirkan Dokumen / File Kegiatan',
+        'subtitle'  => 'Upload file pendukung kegiatan operasional (SOP, foto, laporan, checklist).',
+        'icon'      => 'ti-paperclip',
+        'iconColor' => '#F59E0B',
+        'moduleId'  => $modules->first()?->id ?? 1,
+        'noteText'  => 'Lampiran dokumen monitoring kegiatan operasional',
+    ])
 
     @php
         $kanbanCols = [

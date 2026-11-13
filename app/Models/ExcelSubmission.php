@@ -18,6 +18,7 @@ class ExcelSubmission extends Model
         'file_path',
         'status',
         'notes',
+        'analysis_data',
     ];
 
     protected $casts = [
