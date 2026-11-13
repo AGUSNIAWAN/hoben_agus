@@ -31,6 +31,26 @@
         </div>
 
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            {{-- Pilihan Berkas dari Histori Upload --}}
+            <div style="display: flex; align-items: center; gap: 8px; background: var(--panel-bg); padding: 6px 12px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <i class="ti ti-file-analytics" style="color: #10b981; font-size: 1.15rem;"></i>
+                <label for="historyFileSelect" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin: 0; white-space: nowrap;">Pilih Berkas Histori:</label>
+                <select id="historyFileSelect" class="styled-select" style="font-size: 0.82rem; font-weight: 700; padding: 4px 8px; border: none; background: transparent; color: var(--text-main); cursor: pointer; max-width: 280px;" onchange="handleHistoryFileSelect(this.value)">
+                    <option value="DEFAULT">📊 Dataset Master Store A20 (Jan - Okt 2026)</option>
+                    @foreach($uploadHistory ?? [] as $hist)
+                        @php
+                            $fTitle = $hist->original_name ?? basename($hist->file_path ?? 'Dokumen.xlsx');
+                            $shortName = Str::limit($fTitle, 30);
+                            $uploader = $hist->user->name ?? 'Staff';
+                            $tgl = $hist->created_at ? $hist->created_at->format('d/m H:i') : '-';
+                        @endphp
+                        <option value="{{ $hist->id }}">
+                            📄 #{{ $hist->id }} &bull; {{ $shortName }} ({{ $uploader }} - {{ $tgl }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             {{-- Period Filter Dropdown --}}
             <div style="display: flex; align-items: center; gap: 8px; background: var(--panel-bg); padding: 6px 12px; border-radius: 12px; border: 1px solid var(--border-color);">
                 <i class="ti ti-calendar" style="color: var(--hokben-yellow-dark); font-size: 1.1rem;"></i>
@@ -74,6 +94,9 @@
         'moduleId'  => $modules->first()?->id ?? 1,
         'noteText'  => 'Laporan Penjualan Per Group Store A20 Ruko Plaju',
     ])
+
+    {{-- Tempat Munculnya Analisis Berkas yang Dipilih dari Histori --}}
+    <div id="history-file-analysis-card" style="display: none; margin-bottom: 24px;"></div>
 
     {{-- ===== 2. EXECUTIVE KPI STAT CARDS ===== --}}
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 16px; margin-bottom: 24px;">

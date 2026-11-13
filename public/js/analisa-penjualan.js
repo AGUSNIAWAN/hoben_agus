@@ -908,6 +908,191 @@
         reader.readAsArrayBuffer(file);
     }
 
+    // Handler Pilihan Berkas dari Histori Upload
+    window.handleHistoryFileSelect = function(subId) {
+        const card = document.getElementById('history-file-analysis-card');
+        if (!card) return;
+
+        if (!subId || subId === 'DEFAULT') {
+            card.style.display = 'none';
+            card.innerHTML = '';
+            return;
+        }
+
+        card.style.display = 'block';
+        card.innerHTML = `
+            <div class="glass-panel" style="padding: 24px; text-align: center; color: var(--text-muted); border-left: 4px solid var(--hokben-yellow-dark);">
+                <i class="ti ti-loader" style="font-size: 2rem; display: block; margin-bottom: 8px; animation: spin 1s linear infinite;"></i>
+                <span>Memuat data hasil analisis berkas #${subId}...</span>
+            </div>
+        `;
+
+        fetch(`/submissions/${subId}/analysis-json`, {
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data || !data.success || !data.analysis) {
+                card.innerHTML = `
+                    <div class="glass-panel" style="padding: 18px 24px; border-left: 4px solid #EF4444; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <p style="margin: 0; font-weight: 700; color: #EF4444; font-size: 0.95rem;">
+                                <i class="ti ti-alert-triangle"></i> Data analisis belum selesai diproses untuk berkas ini.
+                            </p>
+                            <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: var(--text-muted);">
+                                Anda dapat mengunduh berkas asli atau memilih berkas lain dari daftar histori.
+                            </p>
+                        </div>
+                        <button type="button" class="btn-outline" onclick="document.getElementById('historyFileSelect').value='DEFAULT'; handleHistoryFileSelect('DEFAULT')" style="padding: 6px 14px; font-size: 0.82rem;">
+                            Tutup
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const sub = data.submission;
+            const a = data.analysis;
+            const m = a.metrics || {};
+            const channels = m.channels || null;
+            const topItems = a.top_items || [];
+            const insights = a.insights || [];
+
+            let html = `
+                <div class="glass-panel" style="padding: 24px; border-left: 4px solid #10b981; position: relative;">
+                    <!-- Header Info Berkas -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+                                <span style="font-size: 0.72rem; font-weight: 800; background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); padding: 3px 10px; border-radius: 20px;">
+                                    BERKAS HISTORI #${sub.id}
+                                </span>
+                                <span style="font-size: 0.76rem; color: var(--text-muted);">
+                                    ${sub.module_name} &bull; ${sub.created_at}
+                                </span>
+                            </div>
+                            <h3 style="margin: 0 0 6px 0; font-size: 1.25rem; font-weight: 800; color: var(--text-main);">
+                                ${sub.file_name}
+                            </h3>
+                            <p style="margin: 0; font-size: 0.82rem; color: var(--text-muted);">
+                                Diunggah oleh: <strong style="color: #FFC400;">${sub.user_name}</strong> (${sub.user_division}) &bull; Ukuran: ${sub.file_size}
+                                &bull; Status: <strong style="color: ${sub.status === 'Lengkap' ? '#10b981' : '#F59E0B'}">${sub.status}</strong>
+                            </p>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <a href="${sub.download_analysis_url}" class="btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 0.82rem; font-weight: 700; text-decoration: none; border-radius: 8px; background: linear-gradient(135deg, #F59E0B 0%, #D9222A 100%); color: #fff; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
+                                <i class="ti ti-table-export"></i> Unduh Data Analisis (.CSV / Excel)
+                            </a>
+                            <a href="${sub.download_url}" class="btn-outline" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; text-decoration: none; border-radius: 8px;">
+                                <i class="ti ti-download"></i> Unduh File Asli
+                            </a>
+                            <button type="button" class="btn-outline" onclick="document.getElementById('historyFileSelect').value='DEFAULT'; handleHistoryFileSelect('DEFAULT')" title="Tutup Tampilan Berkas Ini" style="padding: 8px 12px; font-size: 0.82rem;">
+                                <i class="ti ti-x"></i> Tutup
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Metrik KPI Berkas Terpilih -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                        <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="margin: 0 0 4px 0; font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Omzet Berkas</p>
+                            <p style="margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--hokben-yellow-dark);">${m.formatted_revenue || '-'}</p>
+                        </div>
+                        <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="margin: 0 0 4px 0; font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Volume Porsi</p>
+                            <p style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #10b981;">${m.formatted_qty || '-'}</p>
+                        </div>
+                        <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="margin: 0 0 4px 0; font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Varian Menu Aktif</p>
+                            <p style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #818cf8;">${m.total_menu_variants || (m.total_rows || 0)} Item</p>
+                        </div>
+                        ${channels && channels.online_delivery ? `
+                        <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; padding: 14px; text-align: center;">
+                            <p style="margin: 0 0 4px 0; font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pangsa Online Delivery</p>
+                            <p style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #f87171;">${channels.online_delivery.percentage || '-'}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Breakdown Kanal Penjualan -->
+                    ${channels ? `
+                    <div style="margin-bottom: 20px;">
+                        <p style="margin: 0 0 10px 0; font-size: 0.88rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 7px;">
+                            <i class="ti ti-git-branch" style="color: var(--hokben-yellow-dark);"></i> Breakdown Kanal Penjualan Berkas Ini:
+                        </p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            ${[
+                                { key: 'dine_in', label: 'Dine In', color: '#10b981', icon: 'ti-building-store' },
+                                { key: 'take_away', label: 'Take Away', color: '#F59E0B', icon: 'ti-shopping-bag' },
+                                { key: 'online_delivery', label: 'Online Delivery (GF/GR/SF)', color: '#f87171', icon: 'ti-truck-delivery' }
+                            ].map(ch => {
+                                const c = channels[ch.key];
+                                if (!c) return '';
+                                return `
+                                    <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                            <span style="font-weight: 700; font-size: 0.84rem; color: ${ch.color}; display: flex; align-items: center; gap: 6px;">
+                                                <i class="ti ${ch.icon}"></i> ${ch.label}
+                                            </span>
+                                            <span style="font-weight: 800; font-size: 0.9rem; color: ${ch.color};">${c.percentage}</span>
+                                        </div>
+                                        <p style="margin: 0; font-size: 0.92rem; font-weight: 800; color: var(--text-main);">${c.formatted_revenue}</p>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">${(c.qty || 0).toLocaleString('id-ID')} porsi terjual</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Top 5 Menu Ranking -->
+                    ${topItems && topItems.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <p style="margin: 0 0 10px 0; font-size: 0.88rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 7px;">
+                            <i class="ti ti-trophy" style="color: var(--hokben-yellow-dark);"></i> Peringkat Menu Terlaris di Berkas Ini:
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            ${topItems.slice(0, 5).map((it, idx) => `
+                                <div style="display: flex; align-items: center; gap: 12px; background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px;">
+                                    <span style="font-size: 0.8rem; font-weight: 800; color: ${idx === 0 ? '#F59E0B' : '#94a3b8'}; width: 24px;">#${idx + 1}</span>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <p style="margin: 0; font-weight: 700; font-size: 0.86rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${it.name}</p>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.74rem; color: var(--text-muted);">PLU ${it.plu} &bull; ${(it.total_qty || 0).toLocaleString('id-ID')} porsi</p>
+                                    </div>
+                                    <span style="font-weight: 800; color: var(--hokben-yellow-dark); font-size: 0.9rem;">${it.formatted_revenue}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Insights -->
+                    ${insights && insights.length > 0 ? `
+                    <div style="background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.22); border-radius: 10px; padding: 14px 16px;">
+                        <p style="margin: 0 0 8px 0; font-size: 0.84rem; font-weight: 700; color: #818cf8; display: flex; align-items: center; gap: 6px;">
+                            <i class="ti ti-bulb"></i> Insights &amp; Rekomendasi Otomatis Berkas:
+                        </p>
+                        <ul style="margin: 0; padding-left: 18px; font-size: 0.8rem; color: var(--text-body); line-height: 1.5;">
+                            ${insights.map(ins => `<li style="margin-bottom: 4px;">${ins}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            card.innerHTML = html;
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(err => {
+            card.innerHTML = `
+                <div class="glass-panel" style="padding: 18px; border-left: 4px solid #EF4444; color: #fca5a5; font-size: 0.85rem;">
+                    <i class="ti ti-alert-triangle"></i> Gagal memuat data analisis: ${err.message}
+                </div>
+            `;
+        });
+    };
+
     // Auto-listen to Dark / Light theme toggle
     window.addEventListener('themeChanged', function(e) {
         if (salesData) {
