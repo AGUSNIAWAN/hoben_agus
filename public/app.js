@@ -342,22 +342,174 @@ window.saveShiftChecklist = function() {
     });
 };
 
-// Modal Verifikasi Dokumen oleh Leader (Opsi B)
+// Modal Verifikasi Dokumen oleh Leader (Opsi B) & Detail Analisis Data
 window.openVerifyModalWithData = function(id, fileTitle, userName, downloadUrl, notes) {
     const modal = document.getElementById('verify-modal');
     const form = document.getElementById('verify-submission-form');
     const titleEl = document.getElementById('verify-modal-file-title');
     const userEl = document.getElementById('verify-modal-user');
+    const timeEl = document.getElementById('verify-modal-time');
+    const statusBadge = document.getElementById('verify-modal-status-badge');
     const downloadBtn = document.getElementById('verify-modal-download-btn');
+    const downloadAnalysisBtn = document.getElementById('verify-modal-download-analysis-btn');
     const notesEl = document.getElementById('verify-modal-notes');
+    const container = document.getElementById('verify-modal-analysis-container');
 
     if (form) form.action = `/submissions/${id}/verify`;
     if (titleEl) titleEl.textContent = fileTitle;
     if (userEl) userEl.textContent = userName;
     if (downloadBtn) downloadBtn.href = downloadUrl;
+    if (downloadAnalysisBtn) downloadAnalysisBtn.href = `/submissions/${id}/download-analysis`;
     if (notesEl) notesEl.value = notes || '';
 
+    if (container) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 24px; color: var(--text-muted);">
+                <i class="ti ti-loader" style="font-size: 2rem; display: block; margin-bottom: 8px; animation: spin 1s linear infinite;"></i>
+                <span>Memuat data hasil analisis...</span>
+            </div>
+        `;
+    }
+
     if (modal) modal.classList.add('active');
+
+    // Fetch data analisis dari endpoint JSON
+    fetch(`/submissions/${id}/analysis-json`, {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!container) return;
+
+        if (data.submission) {
+            if (timeEl) timeEl.textContent = `${data.submission.created_at} • ${data.submission.module_name}`;
+            if (titleEl) titleEl.textContent = data.submission.file_name;
+            if (statusBadge) {
+                statusBadge.textContent = data.submission.status;
+                statusBadge.className = 'badge-status ' + (data.submission.status === 'Lengkap' ? 'success' : (data.submission.status === 'Perlu Perbaikan' ? 'danger' : 'warning'));
+            }
+            if (downloadAnalysisBtn) {
+                downloadAnalysisBtn.href = data.submission.download_analysis_url || `/submissions/${id}/download-analysis`;
+            }
+        }
+
+        const a = data.analysis;
+        if (!a || !a.metrics) {
+            container.innerHTML = `
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; text-align: center; color: var(--text-muted);">
+                    <i class="ti ti-file-info" style="font-size: 2rem; color: #818cf8; display: block; margin-bottom: 8px;"></i>
+                    <p style="margin: 0; font-weight: 700; color: var(--text-main);">Data Berkas Terarsip</p>
+                    <p style="margin: 4px 0 0 0; font-size: 0.8rem;">Berkas tersimpan aman di database server. Klik tombol di atas untuk mengunduh data hasil analisis (.CSV / Excel) atau berkas asli.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const m = a.metrics;
+        const channels = m.channels || null;
+        const topItems = a.top_items || [];
+        const insights = a.insights || [];
+
+        let html = `
+            <!-- KPI Analysis Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px;">
+                <div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 12px; text-align: center;">
+                    <p style="margin: 0 0 2px 0; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Omzet</p>
+                    <p style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--hokben-yellow-dark);">${m.formatted_revenue || '-'}</p>
+                </div>
+                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; padding: 12px; text-align: center;">
+                    <p style="margin: 0 0 2px 0; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Porsi</p>
+                    <p style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #10b981;">${m.formatted_qty || '-'}</p>
+                </div>
+                <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); border-radius: 10px; padding: 12px; text-align: center;">
+                    <p style="margin: 0 0 2px 0; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Varian Menu</p>
+                    <p style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #818cf8;">${m.total_menu_variants || (m.total_rows ? m.total_rows + ' baris' : '0')} Item</p>
+                </div>
+            </div>
+        `;
+
+        // Channels
+        if (channels) {
+            html += `
+                <div style="margin-bottom: 16px;">
+                    <p style="margin: 0 0 8px 0; font-size: 0.82rem; font-weight: 700; color: var(--text-body);">
+                        <i class="ti ti-git-branch" style="color: var(--hokben-yellow-dark);"></i> Breakdown Kanal Penjualan:
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+            `;
+            const chDefs = [
+                { key: 'dine_in', label: 'Dine In', color: '#10b981' },
+                { key: 'take_away', label: 'Take Away', color: '#F59E0B' },
+                { key: 'online_delivery', label: 'Online Delivery', color: '#f87171' }
+            ];
+            chDefs.forEach(ch => {
+                const cData = channels[ch.key];
+                if (cData) {
+                    html += `
+                        <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-weight: 700; font-size: 0.8rem; color: ${ch.color};">${ch.label}</span>
+                                <span style="font-weight: 800; font-size: 0.82rem; color: ${ch.color};">${cData.percentage}</span>
+                            </div>
+                            <p style="margin: 0; font-size: 0.84rem; font-weight: 700; color: var(--text-main);">${cData.formatted_revenue}</p>
+                            <p style="margin: 0; font-size: 0.72rem; color: var(--text-muted);">${(cData.qty || 0).toLocaleString('id-ID')} porsi</p>
+                        </div>
+                    `;
+                }
+            });
+            html += `</div></div>`;
+        }
+
+        // Top 5 Menu
+        if (topItems && topItems.length > 0) {
+            html += `
+                <div style="margin-bottom: 16px;">
+                    <p style="margin: 0 0 8px 0; font-size: 0.82rem; font-weight: 700; color: var(--text-body);">
+                        <i class="ti ti-trophy" style="color: var(--hokben-yellow-dark);"></i> Menu Terlaris (Ranking Tertinggi):
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+            `;
+            topItems.slice(0, 5).forEach((item, idx) => {
+                html += `
+                    <div style="display: flex; align-items: center; gap: 10px; background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px;">
+                        <span style="font-size: 0.76rem; font-weight: 800; color: ${idx === 0 ? '#F59E0B' : '#94a3b8'}; width: 22px;">#${idx + 1}</span>
+                        <div style="flex: 1; min-width: 0;">
+                            <p style="margin: 0; font-weight: 700; font-size: 0.82rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</p>
+                            <p style="margin: 0; font-size: 0.72rem; color: var(--text-muted);">PLU ${item.plu} &bull; ${(item.total_qty || 0).toLocaleString('id-ID')} porsi</p>
+                        </div>
+                        <span style="font-weight: 800; color: var(--hokben-yellow-dark); font-size: 0.82rem;">${item.formatted_revenue}</span>
+                    </div>
+                `;
+            });
+            html += `</div></div>`;
+        }
+
+        // Insights
+        if (insights && insights.length > 0) {
+            html += `
+                <div style="background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.2); border-radius: 10px; padding: 12px 14px;">
+                    <p style="margin: 0 0 6px 0; font-size: 0.8rem; font-weight: 700; color: #818cf8;">
+                        <i class="ti ti-bulb"></i> Insights &amp; Rekomendasi Otomatis:
+                    </p>
+                    <ul style="margin: 0; padding-left: 18px; font-size: 0.78rem; color: var(--text-body); line-height: 1.4;">
+            `;
+            insights.forEach(ins => {
+                html += `<li style="margin-bottom: 3px;">${ins}</li>`;
+            });
+            html += `</ul></div>`;
+        }
+
+        container.innerHTML = html;
+    })
+    .catch(err => {
+        if (container) {
+            container.innerHTML = `
+                <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 12px; color: #fca5a5; font-size: 0.82rem;">
+                    <i class="ti ti-alert-triangle"></i> Gagal memuat data analisis: ${err.message}. Anda tetap dapat mengunduh berkas asli atau data analisis melalui tombol di atas.
+                </div>
+            `;
+        }
+    });
 };
 
 window.closeVerifyModal = function() {

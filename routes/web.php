@@ -33,7 +33,9 @@ Route::middleware(['auth'])->group(function () {
     // Pengajuan & Upload Berkas Excel Staf (Opsi A)
     Route::post('/submissions', [ExcelSubmissionController::class, 'store'])->name('submissions.store');
 
-    // Verifikasi Dokumen oleh Leader (Opsi B)
+    // Verifikasi Dokumen oleh Leader (Opsi B) & Download Berkas/Analisis
     Route::patch('/submissions/{submission}/verify', [ExcelSubmissionController::class, 'verify'])->name('submissions.verify');
     Route::get('/submissions/{submission}/download', [ExcelSubmissionController::class, 'download'])->name('submissions.download');
+    Route::get('/submissions/{submission}/download-analysis', [ExcelSubmissionController::class, 'downloadAnalysis'])->name('submissions.download_analysis');
+    Route::get('/submissions/{submission}/analysis-json', [ExcelSubmissionController::class, 'getAnalysisJson'])->name('submissions.analysis_json');
 });

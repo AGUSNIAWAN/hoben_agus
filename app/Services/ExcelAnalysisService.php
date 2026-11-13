@@ -270,6 +270,7 @@ class ExcelAnalysisService
             ],
             'top_items' => $topItems,
             'preview_table' => $previewItems,
+            'all_items' => $items,
             'insights' => $insights
         ];
     }

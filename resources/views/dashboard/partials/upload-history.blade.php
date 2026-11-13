@@ -238,12 +238,16 @@
                         {{-- Actions --}}
                         <td style="text-align: center;">
                             <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+                                <a href="{{ route('submissions.download_analysis', $item) }}" title="Unduh Data Hasil Analisis (Excel/CSV)"
+                                   class="btn-primary" style="padding: 6px 10px; font-size: 0.78rem; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; background: rgba(245,158,11,0.18); color: #F59E0B; border: 1px solid rgba(245,158,11,0.35);">
+                                    <i class="ti ti-table-export"></i>
+                                </a>
                                 <a href="{{ route('submissions.download', $item) }}" title="Unduh File Asli"
                                    class="btn-outline" style="padding: 6px 10px; font-size: 0.78rem; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center;">
                                     <i class="ti ti-download"></i>
                                 </a>
-                                <button type="button" title="Review / Lihat Catatan"
-                                        onclick="openVerifyModalWithData({{ $item->id }}, '{{ addslashes($item->module->name ?? 'Form Excel') }}', '{{ addslashes($item->user->name ?? 'Staff') }}', '{{ route('submissions.download', $item) }}', '{{ addslashes($item->notes ?? '') }}')"
+                                <button type="button" title="Detail & Review"
+                                        onclick="openVerifyModalWithData({{ $item->id }}, '{{ addslashes($fileName) }}', '{{ addslashes($item->user->name ?? 'Staff') }}', '{{ route('submissions.download', $item) }}', '{{ addslashes($item->notes ?? '') }}')"
                                         class="btn-primary" style="padding: 6px 12px; font-size: 0.78rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
                                     <i class="ti ti-eye"></i> Detail
                                 </button>
@@ -297,3 +301,4 @@ window.filterUploadHistoryTable = function() {
     }
 };
 </script>
+

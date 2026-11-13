@@ -117,6 +117,184 @@ class ExcelSubmissionController extends Controller
             return redirect()->back()->with('error', 'File tidak ditemukan di server.');
         }
 
-        return Storage::disk('public')->download($submission->file_path);
+        $downloadName = $submission->original_name ?: basename($submission->file_path);
+        return Storage::disk('public')->download($submission->file_path, $downloadName);
+    }
+
+    /**
+     * Unduh hasil analisis data terstruktur (CSV berformat Excel UTF-8 BOM)
+     */
+    public function downloadAnalysis(ExcelSubmission $submission)
+    {
+        $analysis = null;
+        if ($submission->analysis_data) {
+            $analysis = json_decode($submission->analysis_data, true);
+        }
+
+        // Jika belum ada analisis atau data item belum lengkap, jalankan on-the-fly
+        if (!$analysis || !isset($analysis['all_items'])) {
+            if ($submission->file_path && Storage::disk('public')->exists($submission->file_path)) {
+                $fullPath = Storage::disk('public')->path($submission->file_path);
+                $svc = new ExcelAnalysisService();
+                $res = $svc->analyze($fullPath);
+                if ($res['success'] ?? false) {
+                    $analysis = $res;
+                    $submission->update(['analysis_data' => json_encode($res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+                }
+            }
+        }
+
+        if (!$analysis) {
+            return redirect()->back()->with('error', 'Data analisis belum tersedia untuk dokumen ini.');
+        }
+
+        $baseTitle = $submission->original_name ? pathinfo($submission->original_name, PATHINFO_FILENAME) : 'Laporan';
+        $cleanTitle = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseTitle);
+        $fileName = "Data_Analisis_{$submission->id}_{$cleanTitle}.csv";
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($submission, $analysis) {
+            $output = fopen('php://output', 'w');
+
+            // UTF-8 BOM agar Excel membukanya dengan encoding yang benar dan kolom rapi
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Metadata Ringkasan
+            fputcsv($output, ['=== HASIL ANALISIS DATA OPERASIONAL HOKBEN ===']);
+            fputcsv($output, ['Judul Dokumen', $analysis['title'] ?? 'Laporan Operasional']);
+            fputcsv($output, ['Nama Gerai / Store', $analysis['store_name'] ?? 'HokBen Outlet']);
+            fputcsv($output, ['Kategori Modul', $submission->module->name ?? 'Form Excel']);
+            fputcsv($output, ['Petugas Pengunggah', ($submission->user->name ?? 'Staff') . ' (' . ($submission->user->division ?? '-') . ')']);
+            fputcsv($output, ['Waktu Upload', $submission->created_at ? $submission->created_at->format('d/m/Y H:i') : '-']);
+            fputcsv($output, ['Status Verifikasi', $submission->status]);
+            fputcsv($output, ['File Sumber Asli', $submission->original_name ?? basename($submission->file_path ?? '-')]);
+            fputcsv($output, []);
+
+            // Ringkasan KPI
+            if (isset($analysis['metrics'])) {
+                $m = $analysis['metrics'];
+                fputcsv($output, ['=== RINGKASAN METRIK KPI PENJUALAN ===']);
+                fputcsv($output, ['Total Omzet', $m['formatted_revenue'] ?? ('Rp ' . number_format($m['total_revenue'] ?? 0, 0, ',', '.'))]);
+                fputcsv($output, ['Total Porsi Terjual', $m['formatted_qty'] ?? number_format($m['total_qty'] ?? 0, 0, ',', '.')]);
+                fputcsv($output, ['Total Varian Menu', ($m['total_menu_variants'] ?? 0) . ' Varian']);
+
+                if (isset($m['channels'])) {
+                    fputcsv($output, []);
+                    fputcsv($output, ['Kanal Penjualan', 'Porsi (Qty)', 'Omzet (Rp)', 'Kontribusi (%)']);
+                    foreach ($m['channels'] as $cKey => $cVal) {
+                        $cName = match($cKey) {
+                            'dine_in' => 'Dine In',
+                            'take_away' => 'Take Away',
+                            'online_delivery' => 'Online Delivery (GF/GR/SF)',
+                            default => ucfirst($cKey)
+                        };
+                        fputcsv($output, [
+                            $cName,
+                            $cVal['qty'] ?? 0,
+                            $cVal['formatted_revenue'] ?? ('Rp ' . number_format($cVal['revenue'] ?? 0, 0, ',', '.')),
+                            $cVal['percentage'] ?? '0%'
+                        ]);
+                    }
+                }
+                fputcsv($output, []);
+            }
+
+            // Insights
+            if (!empty($analysis['insights'])) {
+                fputcsv($output, ['=== REKOMENDASI & INSIGHTS SISTEM ===']);
+                foreach ($analysis['insights'] as $idx => $ins) {
+                    fputcsv($output, [($idx + 1) . '. ' . $ins]);
+                }
+                fputcsv($output, []);
+            }
+
+            // Data Menu Lengkap
+            $items = $analysis['all_items'] ?? $analysis['preview_table'] ?? [];
+            if (!empty($items)) {
+                fputcsv($output, ['=== RINCIAN DATA PER ITEM MENU (HASIL ANALISIS) ===']);
+                fputcsv($output, [
+                    'No',
+                    'Kode PLU',
+                    'Nama Item Menu',
+                    'Dine In Qty',
+                    'Dine In Omzet (Rp)',
+                    'Take Away Qty',
+                    'Take Away Omzet (Rp)',
+                    'Online Qty',
+                    'Online Omzet (Rp)',
+                    'Total Qty (Porsi)',
+                    'Total Omzet (Rp)',
+                ]);
+
+                $no = 1;
+                foreach ($items as $it) {
+                    fputcsv($output, [
+                        $no++,
+                        $it['plu'] ?? '-',
+                        $it['name'] ?? '-',
+                        $it['dine_in_qty'] ?? 0,
+                        $it['dine_in_rp'] ?? 0,
+                        $it['take_away_qty'] ?? 0,
+                        $it['take_away_rp'] ?? 0,
+                        $it['online_qty'] ?? 0,
+                        $it['online_rp'] ?? 0,
+                        $it['total_qty'] ?? 0,
+                        $it['total_revenue'] ?? 0,
+                    ]);
+                }
+            }
+
+            fclose($output);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Endpoint API JSON untuk mengambil data analisis sebuah submission
+     */
+    public function getAnalysisJson(ExcelSubmission $submission)
+    {
+        $analysis = null;
+        if ($submission->analysis_data) {
+            $analysis = json_decode($submission->analysis_data, true);
+        }
+
+        if (!$analysis || !isset($analysis['all_items'])) {
+            if ($submission->file_path && Storage::disk('public')->exists($submission->file_path)) {
+                $fullPath = Storage::disk('public')->path($submission->file_path);
+                $svc = new ExcelAnalysisService();
+                $res = $svc->analyze($fullPath);
+                if ($res['success'] ?? false) {
+                    $analysis = $res;
+                    $submission->update(['analysis_data' => json_encode($res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => !is_null($analysis),
+            'submission' => [
+                'id' => $submission->id,
+                'file_name' => $submission->original_name ?? basename($submission->file_path ?? 'Dokumen.xlsx'),
+                'file_size' => $submission->formatted_file_size,
+                'status' => $submission->status,
+                'notes' => $submission->notes,
+                'user_name' => $submission->user->name ?? 'Staff',
+                'user_division' => $submission->user->division ?? 'Operasional',
+                'module_name' => $submission->module->name ?? 'Form Excel',
+                'created_at' => $submission->created_at ? $submission->created_at->format('d M Y H:i') : '-',
+                'download_url' => route('submissions.download', $submission),
+                'download_analysis_url' => route('submissions.download_analysis', $submission),
+            ],
+            'analysis' => $analysis,
+        ]);
     }
 }

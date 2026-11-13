@@ -178,9 +178,15 @@
                                 </span>
                             </td>
                             <td>
-                                <button class="btn-primary" onclick="openVerifyModalWithData({{ $sub->id }}, '{{ addslashes($sub->module->name ?? 'Form Excel') }}', '{{ addslashes($sub->user->name ?? 'Staff') }}', '{{ route('submissions.download', $sub) }}', '{{ addslashes($sub->notes ?? '') }}')">
-                                    <i class="ti ti-eye"></i> Review
-                                </button>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <a href="{{ route('submissions.download_analysis', $sub) }}" title="Unduh Data Hasil Analisis (.CSV/Excel)"
+                                       class="btn-primary" style="padding: 6px 10px; font-size: 0.78rem; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; background: rgba(245,158,11,0.18); color: #F59E0B; border: 1px solid rgba(245,158,11,0.35);">
+                                        <i class="ti ti-table-export"></i>
+                                    </a>
+                                    <button class="btn-primary" onclick="openVerifyModalWithData({{ $sub->id }}, '{{ addslashes($sub->original_name ?? ($sub->module->name ?? 'Form Excel')) }}', '{{ addslashes($sub->user->name ?? 'Staff') }}', '{{ route('submissions.download', $sub) }}', '{{ addslashes($sub->notes ?? '') }}')">
+                                        <i class="ti ti-eye"></i> Detail
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @empty
@@ -207,8 +213,8 @@
                             <h4>{{ $pending->module->name ?? 'Form Excel' }}</h4>
                             <p><i class="ti ti-user" style="font-size: 0.85rem;"></i> {{ $pending->user->name ?? 'Staff' }} • {{ $pending->created_at ? $pending->created_at->diffForHumans() : 'Hari ini' }}</p>
                         </div>
-                        <button class="btn-primary" onclick="openVerifyModalWithData({{ $pending->id }}, '{{ addslashes($pending->module->name ?? 'Form Excel') }}', '{{ addslashes($pending->user->name ?? 'Staff') }}', '{{ route('submissions.download', $pending) }}', '{{ addslashes($pending->notes ?? '') }}')">
-                            <i class="ti ti-check"></i> Cek
+                        <button class="btn-primary" onclick="openVerifyModalWithData({{ $pending->id }}, '{{ addslashes($pending->original_name ?? ($pending->module->name ?? 'Form Excel')) }}', '{{ addslashes($pending->user->name ?? 'Staff') }}', '{{ route('submissions.download', $pending) }}', '{{ addslashes($pending->notes ?? '') }}')">
+                            <i class="ti ti-check"></i> Detail &amp; Cek
                         </button>
                     </div>
                     @empty
