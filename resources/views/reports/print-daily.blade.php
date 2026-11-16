@@ -513,8 +513,8 @@
         <div class="signature-grid">
             <div class="sig-box">
                 <p class="sig-title">Dibuat &amp; Dilaporkan Oleh,</p>
-                <div class="sig-name">{{ Auth::user()->name ?? 'Budi Santoso' }}</div>
-                <p class="sig-role">Store Leader / PIC Gerai</p>
+                <div class="sig-name">{{ Auth::user()->name ?? 'YUDI SETIAWAN' }}</div>
+                <p class="sig-role">Manager / PIC Gerai</p>
             </div>
             <div class="sig-box">
                 <p class="sig-title">Diketahui &amp; Disetujui Oleh,</p>
@@ -527,3 +527,4 @@
 
 </body>
 </html>
+

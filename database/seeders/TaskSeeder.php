@@ -17,7 +17,7 @@ class TaskSeeder extends Seeder
     {
         // Pastikan ada beberapa staf HokBen untuk penugasan PIC
         $usersData = [
-            ['name' => 'Budi Santoso (Store Leader)', 'email' => 'admin@hokben.co.id'],
+            ['name' => 'YUDI SETIAWAN (Manager)', 'email' => 'admin@hokben.co.id'],
             ['name' => 'Siti Aminah (Front Counter)', 'email' => 'siti@hokben.co.id'],
             ['name' => 'Ahmad Fauzi (Kitchen Leader)', 'email' => 'ahmad@hokben.co.id'],
             ['name' => 'Rian Hidayat (Cashier PIC)', 'email' => 'rian@hokben.co.id'],
