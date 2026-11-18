@@ -42,3 +42,16 @@ Route::middleware(['auth'])->group(function () {
     // Cetak / Export PDF Laporan Resmi 1 Lembar
     Route::get('/reports/print-daily', [DashboardController::class, 'printDailyReport'])->name('reports.print');
 });
+
+// Helper Route untuk Screenshot & Preview Otomatis Tiap Section
+Route::get('/preview/{section?}', function ($section = 'dashboard', \Illuminate\Http\Request $request) {
+    if (!\Illuminate\Support\Facades\Auth::check()) {
+        $user = \App\Models\User::first();
+        \Illuminate\Support\Facades\Auth::login($user);
+    }
+    if ($section === 'print-daily') {
+        return app(\App\Http\Controllers\DashboardController::class)->printDailyReport($request);
+    }
+    $request->merge(['view' => $section]);
+    return app(\App\Http\Controllers\DashboardController::class)->index($request);
+})->name('preview.section');

@@ -276,6 +276,16 @@
                     }
                 });
             });
+
+            // Check URL query param for direct section view (e.g. ?view=staff-portal)
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialView = urlParams.get('view') || urlParams.get('section');
+            if (initialView) {
+                setTimeout(() => {
+                    const link = document.querySelector(`.nav-link[data-target="${initialView}"]`);
+                    if (link) link.click();
+                }, 100);
+            }
         });
     </script>
 
