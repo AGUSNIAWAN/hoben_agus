@@ -21,6 +21,30 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
         })();
     </script>
+
+    @php
+        $targetTab = request('view', request('section', 'dashboard'));
+        $tabTitles = [
+            'dashboard' => 'Dashboard Leader',
+            'sales' => 'Monitoring Sales',
+            'analisa-penjualan' => 'Analisa Penjualan Store (A20)',
+            'staff-portal' => 'Portal Staff',
+            'reports' => 'Rekap & Laporan',
+            'upload-history-view' => 'Riwayat & Histori Upload',
+            'serah-terima' => 'Serah Terima Sales & Modal Harian',
+            'monitoring-preshift-area19' => 'MONITORING PRE-SHIFT ONLINE AREA 19',
+            'monitoring-kfm-helpdesk' => 'MONITORING KFM DAN HELPDESK',
+            'monitoring-kegiatan' => 'MONITORING KEGIATAN KANBAN',
+            'promo-sep' => 'REKAP PROMO SEPTEMBER',
+        ];
+        $currentTabTitle = $tabTitles[$targetTab] ?? 'Dashboard Monitoring';
+    @endphp
+    @if($targetTab && $targetTab !== 'dashboard')
+    <style>
+        .view-section { display: none !important; opacity: 0 !important; }
+        #view-{{ $targetTab }} { display: block !important; opacity: 1 !important; visibility: visible !important; }
+    </style>
+    @endif
 </head>
 <body>
     <!-- Mobile Sidebar Backdrop Overlay -->
@@ -48,37 +72,37 @@
             </div>
 
             <nav class="nav-menu">
-                <a href="#" class="nav-link active" data-target="dashboard">
+                <a href="#" class="nav-link {{ $targetTab === 'dashboard' ? 'active' : '' }}" data-target="dashboard">
                     <i class="ti ti-layout-dashboard"></i> Dashboard Leader
                 </a>
-                <a href="#" class="nav-link" data-target="sales">
+                <a href="#" class="nav-link {{ $targetTab === 'sales' ? 'active' : '' }}" data-target="sales">
                     <i class="ti ti-chart-bar"></i> Monitoring Sales
                 </a>
-                <a href="#" class="nav-link" data-target="analisa-penjualan" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
+                <a href="#" class="nav-link {{ $targetTab === 'analisa-penjualan' ? 'active' : '' }}" data-target="analisa-penjualan" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
                     <i class="ti ti-chart-histogram" style="color: #D9222A;"></i> Analisa Penjualan Store (A20)
                 </a>
-                <a href="#" class="nav-link" data-target="staff-portal">
+                <a href="#" class="nav-link {{ $targetTab === 'staff-portal' ? 'active' : '' }}" data-target="staff-portal">
                     <i class="ti ti-users"></i> Portal Staff
                 </a>
-                <a href="#" class="nav-link" data-target="reports">
+                <a href="#" class="nav-link {{ $targetTab === 'reports' ? 'active' : '' }}" data-target="reports">
                     <i class="ti ti-report-analytics"></i> Rekap & Laporan
                 </a>
-                <a href="#" class="nav-link" data-target="upload-history-view" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
+                <a href="#" class="nav-link {{ $targetTab === 'upload-history-view' ? 'active' : '' }}" data-target="upload-history-view" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
                     <i class="ti ti-history" style="color: #10b981;"></i> Riwayat &amp; Histori Upload
                 </a>
-                <a href="#" class="nav-link" data-target="serah-terima">
+                <a href="#" class="nav-link {{ $targetTab === 'serah-terima' ? 'active' : '' }}" data-target="serah-terima">
                     <i class="ti ti-cash-banknote"></i> Serah Terima Sales & Modal Harian
                 </a>
-                <a href="#" class="nav-link" data-target="monitoring-preshift-area19">
+                <a href="#" class="nav-link {{ $targetTab === 'monitoring-preshift-area19' ? 'active' : '' }}" data-target="monitoring-preshift-area19">
                     <i class="ti ti-checklist"></i> MONITORING PRE-SHIFT ONLINE AREA 19
                 </a>
-                <a href="#" class="nav-link" data-target="monitoring-kfm-helpdesk">
+                <a href="#" class="nav-link {{ $targetTab === 'monitoring-kfm-helpdesk' ? 'active' : '' }}" data-target="monitoring-kfm-helpdesk">
                     <i class="ti ti-headset"></i> MONITORING KFM DAN HELPDESK
                 </a>
-                <a href="#" class="nav-link" data-target="monitoring-kegiatan">
+                <a href="#" class="nav-link {{ $targetTab === 'monitoring-kegiatan' ? 'active' : '' }}" data-target="monitoring-kegiatan">
                     <i class="ti ti-layout-kanban"></i> MONITORING KEGIATAN KANBAN
                 </a>
-                <a href="#" class="nav-link" data-target="promo-sep" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
+                <a href="#" class="nav-link {{ $targetTab === 'promo-sep' ? 'active' : '' }}" data-target="promo-sep" style="border-left: 2px solid transparent; transition: border-color 0.2s;">
                     <i class="ti ti-rosette-discount" style="color: #F59E0B;"></i> REKAP PROMO SEPTEMBER
                 </a>
             </nav>
@@ -137,7 +161,7 @@
                                 </select>
                             </div>
                         </form>
-                        <h1 id="current-page-title">Dashboard Monitoring</h1>
+                        <h1 id="current-page-title">{{ $currentTabTitle }}</h1>
                         <p class="date" id="current-date"></p>
                     </div>
                 </div>
